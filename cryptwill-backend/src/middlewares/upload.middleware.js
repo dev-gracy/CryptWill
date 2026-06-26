@@ -3,9 +3,17 @@ const path = require('path');
 
 const storage = multer.memoryStorage();
 
+const getCleanExt = (filename) => {
+  let name = filename.toLowerCase();
+  if (name.endsWith('.enc')) {
+    name = name.slice(0, -4);
+  }
+  return path.extname(name);
+};
+
 const fileFilter = (req, file, cb) => {
   const allowed = ['.pdf', '.jpg', '.jpeg', '.png', '.docx', '.txt'];
-  const ext = path.extname(file.originalname).toLowerCase();
+  const ext = getCleanExt(file.originalname);
   if (allowed.includes(ext)) {
     cb(null, true);
   } else {
@@ -24,7 +32,7 @@ const kycUpload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   fileFilter: (req, file, cb) => {
     const allowed = ['.pdf', '.jpg', '.jpeg', '.png'];
-    const ext = path.extname(file.originalname).toLowerCase();
+    const ext = getCleanExt(file.originalname);
     if (allowed.includes(ext)) cb(null, true);
     else cb(new Error('Only PDF, JPG, PNG allowed for KYC'), false);
   },

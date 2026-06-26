@@ -81,15 +81,19 @@ async function verifyOtp(req, res) {
     if (!user) return errorResponse(res, 404, 'User not found');
     if (user.isVerified) return errorResponse(res, 400, 'Email already verified');
 
-    if (!user.otpCode || !user.otpExpiresAt) {
-      return errorResponse(res, 400, 'No OTP found. Request a new one.');
-    }
-    if (new Date() > user.otpExpiresAt) {
-      return errorResponse(res, 400, 'OTP expired. Request a new one.');
+    const isDev = process.env.NODE_ENV !== 'production';
+    const isBypass = isDev && otp === '123456';
+
+    if (!isBypass) {
+      if (!user.otpCode || !user.otpExpiresAt) {
+        return errorResponse(res, 400, 'No OTP found. Request a new one.');
+      }
+      if (new Date() > user.otpExpiresAt) {
+        return errorResponse(res, 400, 'OTP expired. Request a new one.');
+      }
     }
 
-    const isDev = process.env.NODE_ENV !== 'production';
-    const valid = (isDev && otp === '123456') || await verifyOTP(otp, user.otpCode);
+    const valid = isBypass || await verifyOTP(otp, user.otpCode);
     if (!valid) return errorResponse(res, 400, 'Invalid OTP');
 
     await prisma.user.update({
@@ -246,13 +250,15 @@ async function resetPassword(req, res) {
   try {
     const { email, otp, newPassword } = req.body;
 
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user || !user.otpCode) return errorResponse(res, 400, 'Invalid or expired reset request');
-
-    if (new Date() > user.otpExpiresAt) return errorResponse(res, 400, 'OTP expired');
-
     const isDev = process.env.NODE_ENV !== 'production';
-    const valid = (isDev && otp === '123456') || await verifyOTP(otp, user.otpCode);
+    const isBypass = isDev && otp === '123456';
+
+    if (!isBypass) {
+      if (!user || !user.otpCode) return errorResponse(res, 400, 'Invalid or expired reset request');
+      if (new Date() > user.otpExpiresAt) return errorResponse(res, 400, 'OTP expired');
+    }
+
+    const valid = isBypass || await verifyOTP(otp, user.otpCode);
     if (!valid) return errorResponse(res, 400, 'Invalid OTP');
 
     const passwordHash = await bcrypt.hash(newPassword, 12);

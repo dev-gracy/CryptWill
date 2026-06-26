@@ -3,6 +3,9 @@ const PinataSDK = require('@pinata/sdk');
 let pinataClient;
 
 function getPinata() {
+  if (!process.env.PINATA_API_KEY || !process.env.PINATA_API_SECRET) {
+    return null;
+  }
   if (!pinataClient) {
     pinataClient = new PinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_API_SECRET);
   }
@@ -12,6 +15,10 @@ function getPinata() {
 async function uploadBuffer(buffer, filename) {
   try {
     const pinata = getPinata();
+    if (!pinata) {
+      console.warn('[pinata] No API keys configured, using demo IPFS hash');
+      return `demo-ipfs-${Date.now()}`;
+    }
     const result = await pinata.pinFileToIPFS(buffer, { pinataMetadata: { name: filename } });
     return result.IpfsHash;
   } catch (err) {
@@ -23,6 +30,7 @@ async function uploadBuffer(buffer, filename) {
 async function unpinFile(ipfsHash) {
   try {
     const pinata = getPinata();
+    if (!pinata) return null;
     return pinata.unpin(ipfsHash);
   } catch (err) {
     console.warn('[pinata] unpin failed:', err.message);

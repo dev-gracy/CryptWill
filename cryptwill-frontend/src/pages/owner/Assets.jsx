@@ -61,10 +61,10 @@ function AssetModal({ asset, onClose, onSave }) {
     try {
       if (isEdit) {
         const res = await api.put(`/assets/${asset.id}`, formData);
-        onSave(res.data.data, 'edit');
+        onSave(res.data.data.asset, 'edit');
       } else {
         const res = await api.post('/assets', formData);
-        onSave(res.data.data, 'add');
+        onSave(res.data.data.asset, 'add');
       }
       toast.success(isEdit ? 'Asset updated!' : 'Asset added!');
       onClose();
@@ -224,7 +224,7 @@ export default function Assets() {
 
   useEffect(() => {
     api.get('/assets').then(res => {
-      setAssets(res.data.data || []);
+      setAssets(res.data.data?.assets || []);
     }).catch(() => toast.error('Failed to load assets')).finally(() => setLoading(false));
   }, []);
 

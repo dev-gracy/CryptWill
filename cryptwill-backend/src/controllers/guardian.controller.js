@@ -109,31 +109,55 @@ async function guardianLogin(req, res) {
 async function getGuardianDashboard(req, res) {
   try {
     const token = req.cookies.accessToken;
-    if (!token) return errorResponse(res, 401, 'Not authenticated');
-    const decoded = verifyAccessToken(token);
+    if (!token) return errorResponse(res, 401, 'Not authenticated as guardian');
+    
+    let decoded;
+    try {
+      decoded = verifyAccessToken(token);
+    } catch {
+      return errorResponse(res, 401, 'Invalid or expired guardian session');
+    }
     if (decoded.role !== 'guardian') return errorResponse(res, 403, 'Not a guardian');
 
     const guardian = await prisma.guardian.findUnique({
       where: { id: decoded.userId },
-      include: { votes: { include: { contract: true } } },
     });
+    if (!guardian) return errorResponse(res, 404, 'Guardian not found');
 
     const owner = await prisma.user.findUnique({
       where: { id: decoded.ownerId },
       select: {
         fullName: true,
+        email: true,
         contract: {
           select: {
-            id: true, status: true, missedCheckinCount: true,
+            id: true, status: true, missedCheckinCount: true, guardianQuorum: true,
             triggerStartedAt: true, lastCheckinAt: true,
-            votes: { include: { guardian: { select: { fullName: true } } } },
+            votes: {
+              include: { guardian: { select: { fullName: true, email: true } } },
+            },
           },
         },
       },
     });
 
-    return successResponse(res, 200, { guardian, owner });
+    if (!owner) return errorResponse(res, 404, 'Owner not found');
+
+    const contract = owner.contract;
+    const votes = contract?.votes || [];
+    const myVote = votes.find(v => v.guardianId === guardian.id);
+
+    return successResponse(res, 200, {
+      guardianId: guardian.id,
+      ownerName: owner.fullName,
+      ownerEmail: owner.email,
+      contract: contract || null,
+      votes,
+      hasVoted: !!myVote,
+      myVote: myVote || null,
+    });
   } catch (err) {
+    console.error('[getGuardianDashboard]', err);
     return errorResponse(res, 500, 'Failed to load guardian dashboard');
   }
 }

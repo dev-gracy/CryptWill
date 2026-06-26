@@ -24,7 +24,12 @@ export default function Login() {
       toast.success(`Welcome back, ${user.fullName}!`);
       navigate(user.isOnboarded ? '/app' : '/onboarding');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Login failed. Please try again.');
+      if (err.response?.status === 403) {
+        toast.error('Email not verified. Redirecting to verification...');
+        navigate('/verify-otp', { state: { email: data.email } });
+      } else {
+        toast.error(err.response?.data?.error || 'Login failed. Please try again.');
+      }
     }
   };
 

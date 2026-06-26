@@ -9,6 +9,7 @@ router.get('/instant/:token', checkinController.instantCheckin);
 // Protected routes
 router.use(protect);
 router.use(requireOnboarded);
+router.post('/', checkinController.manualCheckin);
 router.post('/manual', checkinController.manualCheckin);
 router.get('/history', checkinController.getCheckinHistory);
 

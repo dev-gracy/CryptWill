@@ -23,8 +23,7 @@ export default function GuardianDashboard() {
     if (!confirm(`Are you sure you want to ${approve ? 'APPROVE' : 'DENY'} this death confirmation?`)) return;
     setVoting(true);
     try {
-      await api.post(`/guardians/${data?.guardianId}/vote`, {
-        contractId: data?.contract?.id,
+      await api.post(`/guardians/${data?.contract?.id}/vote`, {
         vote: approve ? 'APPROVE' : 'DENY',
       });
       toast.success(`Vote cast: ${approve ? 'Approved' : 'Denied'}`);

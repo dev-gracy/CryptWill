@@ -39,10 +39,10 @@ function BeneficiaryModal({ beneficiary, onClose, onSave }) {
     try {
       if (isEdit) {
         const res = await api.put(`/beneficiaries/${beneficiary.id}`, formData);
-        onSave(res.data.data, 'edit');
+        onSave(res.data.data.beneficiary, 'edit');
       } else {
         const res = await api.post('/beneficiaries', formData);
-        onSave(res.data.data, 'add');
+        onSave(res.data.data.beneficiary, 'add');
       }
       toast.success(isEdit ? 'Beneficiary updated!' : 'Beneficiary invited!');
       onClose();
@@ -128,7 +128,7 @@ export default function Beneficiaries() {
   const [editingBen, setEditingBen] = useState(null);
 
   useEffect(() => {
-    api.get('/beneficiaries').then(res => setBeneficiaries(res.data.data || []))
+    api.get('/beneficiaries').then(res => setBeneficiaries(res.data.data?.beneficiaries || []))
       .catch(() => toast.error('Failed to load beneficiaries'))
       .finally(() => setLoading(false));
   }, []);

@@ -30,6 +30,8 @@ import BeneficiaryDashboard from './pages/beneficiary/BeneficiaryDashboard';
 
 // Guardian Pages
 import GuardianDashboard from './pages/guardian/GuardianDashboard';
+import GuardianLogin from './pages/guardian/GuardianLogin';
+import GuardianInvite from './pages/guardian/GuardianInvite';
 
 // Checkin
 import InstantCheckin from './pages/public/InstantCheckin';
@@ -38,6 +40,7 @@ import InstantCheckin from './pages/public/InstantCheckin';
 const ProtectedRoute = ({ children, role = 'OWNER' }) => {
   const { isAuthenticated, user } = useAuthStore();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+  // Only check onboarding for OWNER role
   if (role === 'OWNER' && user && !user.isOnboarded) {
     return <Navigate to="/onboarding" replace />;
   }
@@ -96,6 +99,10 @@ function App() {
         <Route path="/beneficiary" element={<ProtectedRoute role="BENEFICIARY"><MainLayout role="BENEFICIARY" /></ProtectedRoute>}>
           <Route index element={<BeneficiaryDashboard />} />
         </Route>
+
+        {/* Guardian Public Routes */}
+        <Route path="/guardian/login" element={<GuardianLogin />} />
+        <Route path="/guardian/invite/:token" element={<GuardianInvite />} />
 
         {/* Guardian Portal */}
         <Route path="/guardian" element={<ProtectedRoute role="GUARDIAN"><MainLayout role="GUARDIAN" /></ProtectedRoute>}>

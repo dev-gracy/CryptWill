@@ -33,10 +33,10 @@ function GuardianModal({ guardian, onClose, onSave }) {
     try {
       if (isEdit) {
         const res = await api.put(`/guardians/${guardian.id}`, formData);
-        onSave(res.data.data, 'edit');
+        onSave(res.data.data.guardian, 'edit');
       } else {
         const res = await api.post('/guardians', formData);
-        onSave(res.data.data, 'add');
+        onSave(res.data.data.guardian, 'add');
       }
       toast.success(isEdit ? 'Guardian updated!' : 'Guardian invited!');
       onClose();
@@ -132,7 +132,7 @@ export default function Guardians() {
   const [editingGuardian, setEditingGuardian] = useState(null);
 
   useEffect(() => {
-    api.get('/guardians').then(res => setGuardians(res.data.data || []))
+    api.get('/guardians').then(res => setGuardians(res.data.data?.guardians || []))
       .catch(() => toast.error('Failed to load guardians'))
       .finally(() => setLoading(false));
   }, []);
