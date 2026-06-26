@@ -1,10 +1,22 @@
 const prisma = require('../config/db');
 const { successResponse, errorResponse } = require('../middlewares/errorHandler');
 
+// Helper: parse rules from JSON string (SQLite stores as String)
+function parseRules(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  try { return JSON.parse(raw); } catch { return []; }
+}
+
+// Helper: stringify rules for storage
+function stringifyRules(rules) {
+  return JSON.stringify(rules);
+}
+
 async function getRulebook(req, res) {
   try {
     const rulebook = await prisma.userRulebook.findUnique({ where: { userId: req.user.id } });
-    return successResponse(res, 200, { rules: rulebook ? rulebook.rules : [] });
+    return successResponse(res, 200, { rules: parseRules(rulebook?.rules) });
   } catch (err) {
     return errorResponse(res, 500, 'Failed to fetch rulebook');
   }
@@ -15,13 +27,14 @@ async function saveRules(req, res) {
     const { rules } = req.body;
     if (!Array.isArray(rules)) return errorResponse(res, 400, 'Rules must be an array');
 
+    const rulesStr = stringifyRules(rules);
     const rulebook = await prisma.userRulebook.upsert({
       where: { userId: req.user.id },
-      update: { rules },
-      create: { userId: req.user.id, rules },
+      update: { rules: rulesStr },
+      create: { userId: req.user.id, rules: rulesStr },
     });
 
-    return successResponse(res, 200, { rules: rulebook.rules });
+    return successResponse(res, 200, { rules: parseRules(rulebook.rules) });
   } catch (err) {
     return errorResponse(res, 500, 'Failed to save rulebook');
   }
@@ -42,13 +55,13 @@ async function addRule(req, res) {
     };
 
     const rulebook = await prisma.userRulebook.findUnique({ where: { userId: req.user.id } });
-    const existingRules = rulebook ? rulebook.rules : [];
+    const existingRules = parseRules(rulebook?.rules);
     const updatedRules = [...existingRules, newRule];
 
     await prisma.userRulebook.upsert({
       where: { userId: req.user.id },
-      update: { rules: updatedRules },
-      create: { userId: req.user.id, rules: updatedRules },
+      update: { rules: stringifyRules(updatedRules) },
+      create: { userId: req.user.id, rules: stringifyRules(updatedRules) },
     });
 
     return successResponse(res, 201, { rule: newRule });
@@ -65,13 +78,13 @@ async function updateRule(req, res) {
     const rulebook = await prisma.userRulebook.findUnique({ where: { userId: req.user.id } });
     if (!rulebook) return errorResponse(res, 404, 'Rulebook not found');
 
-    const rules = rulebook.rules;
+    const rules = parseRules(rulebook.rules);
     const idx = rules.findIndex(r => r.id === ruleId);
     if (idx === -1) return errorResponse(res, 404, 'Rule not found');
 
     rules[idx] = { ...rules[idx], title, description, category, priority };
 
-    await prisma.userRulebook.update({ where: { userId: req.user.id }, data: { rules } });
+    await prisma.userRulebook.update({ where: { userId: req.user.id }, data: { rules: stringifyRules(rules) } });
     return successResponse(res, 200, { rule: rules[idx] });
   } catch (err) {
     return errorResponse(res, 500, 'Failed to update rule');
@@ -84,8 +97,8 @@ async function deleteRule(req, res) {
     const rulebook = await prisma.userRulebook.findUnique({ where: { userId: req.user.id } });
     if (!rulebook) return errorResponse(res, 404, 'Rulebook not found');
 
-    const updatedRules = rulebook.rules.filter(r => r.id !== ruleId);
-    await prisma.userRulebook.update({ where: { userId: req.user.id }, data: { rules: updatedRules } });
+    const updatedRules = parseRules(rulebook.rules).filter(r => r.id !== ruleId);
+    await prisma.userRulebook.update({ where: { userId: req.user.id }, data: { rules: stringifyRules(updatedRules) } });
     return successResponse(res, 200, { message: 'Rule deleted' });
   } catch (err) {
     return errorResponse(res, 500, 'Failed to delete rule');

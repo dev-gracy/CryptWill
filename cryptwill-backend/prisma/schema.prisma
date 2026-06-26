@@ -203,7 +203,7 @@ model Notification {
   recipient       String
   subject         String?
   body            String
-  metadata        Json?
+  metadata        String?
   sentAt          DateTime?
   failureReason   String?
   createdAt       DateTime              @default(now())
@@ -223,7 +223,7 @@ model UserRulebook {
   id        String   @id @default(uuid())
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  rules     Json     @default("[]")
+  rules     String   @default("[]")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

@@ -19,8 +19,8 @@ export default function Login() {
   const onSubmit = async (data) => {
     try {
       const res = await api.post('/auth/login', data);
-      const { user } = res.data.data;
-      login(user, null); // token is httpOnly cookie, store user info
+      const { user, token } = res.data.data;
+      login(user, token);
       toast.success(`Welcome back, ${user.fullName}!`);
       navigate(user.isOnboarded ? '/app' : '/onboarding');
     } catch (err) {

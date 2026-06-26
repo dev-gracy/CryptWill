@@ -61,21 +61,14 @@ export default function VerifyOtp() {
   const handleVerify = async (code) => {
     setIsLoading(true);
     try {
-      await api.post('/auth/verify-otp', { email, otp: code });
+      const res = await api.post('/auth/verify-otp', { email, otp: code });
       toast.success('Email verified! Welcome to CryptWill 🎉');
       
-      // Fetch full user profile details since verify-otp response doesn't contain user info in body
-      try {
-        const profileRes = await api.get('/user/profile');
-        const user = profileRes.data.data.user;
-        login(user, null);
-        if (user.isOnboarded) {
-          navigate('/app');
-        } else {
-          navigate('/onboarding');
-        }
-      } catch (profileErr) {
-        login({ email, isOnboarded: false }, null);
+      const { user, token } = res.data.data;
+      login(user, token);
+      if (user.isOnboarded) {
+        navigate('/app');
+      } else {
         navigate('/onboarding');
       }
     } catch (err) {
