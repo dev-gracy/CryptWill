@@ -5,7 +5,7 @@ import { persist } from 'zustand/middleware';
 export const useThemeStore = create(
   persist(
     (set) => ({
-      theme: 'light', // Default to peaceful light theme
+      theme: 'dark',
       toggleTheme: () => set((state) => {
         const newTheme = state.theme === 'light' ? 'dark' : 'light';
         // Handle global class

@@ -36,13 +36,13 @@ api.interceptors.response.use(
           { withCredentials: true }
         );
         
-        const { accessToken, user } = res.data.data;
+        const { token } = res.data.data;
         
-        // Update store with the refreshed session payload
-        useAuthStore.getState().login(user || useAuthStore.getState().user, accessToken);
+        // Update store with new token
+        useAuthStore.getState().login(useAuthStore.getState().user, token);
         
         // Retry original request with new token
-        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        originalRequest.headers.Authorization = `Bearer ${token}`;
         return api(originalRequest);
       } catch (refreshError) {
         // If refresh fails, log out the user

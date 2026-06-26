@@ -24,11 +24,12 @@ const rulebookRoutes = require('./routes/rulebook.routes');
 
 const app = express();
 const server = http.createServer(app);
+const frontendOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 // Socket.io for real-time updates
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL,
+    origin: frontendOrigin,
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -49,7 +50,7 @@ io.on('connection', (socket) => {
 
 // Middleware
 app.use(helmet());
-app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
+app.use(cors({ origin: frontendOrigin, credentials: true }));
 
 // Stripe/Razorpay webhooks need raw body, so we conditionally parse JSON
 app.use('/api/subscription/webhook', express.raw({ type: 'application/json' }));
@@ -76,6 +77,15 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/rulebook', rulebookRoutes);
 
+app.get('/', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'CryptWill API',
+    health: '/health',
+    apiBase: '/api',
+  });
+});
+
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));
 
 app.use(errorHandler);
@@ -86,11 +96,13 @@ server.listen(PORT, () => {
   console.log(`[Server] Running on port ${PORT}`);
   
   // Start the background cron jobs and workers
-  if (process.env.NODE_ENV !== 'test') {
+  if (process.env.NODE_ENV !== 'test' && process.env.RUN_WORKERS === 'true') {
     startCheckinMonitor();
     require('./workers/email.worker');
     require('./workers/sms.worker');
     console.log('[Workers] Email & SMS BullMQ workers started');
+  } else {
+    console.log('[Workers] Demo mode enabled - BullMQ workers skipped');
   }
 });
 

@@ -3,92 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-enum KYCStatus {
-  NOT_SUBMITTED
-  SUBMITTED
-  VERIFIED
-  REJECTED
-}
-
-enum Plan {
-  FREE
-  PRO
-  ENTERPRISE
-}
-
-enum ContractStatus {
-  NOT_DEPLOYED
-  ACTIVE
-  TRIGGERED
-  EXECUTING
-  EXECUTED
-  CANCELLED
-}
-
-enum AssetType {
-  STELLAR_WALLET
-  CUSTOM_TOKEN
-  NFT
-  DOCUMENT
-}
-
-enum GuardianStatus {
-  INVITED
-  ACTIVE
-  DECLINED
-  REMOVED
-}
-
-enum BeneficiaryStatus {
-  INVITED
-  ACTIVE
-  DECLINED
-}
-
-enum VoteType {
-  APPROVE
-  DENY
-}
-enum NotificationType {
-  EMAIL_OTP
-  WELCOME
-  PASSWORD_RESET
-  CHECKIN_REMINDER_EARLY
-  CHECKIN_REMINDER_URGENT
-  CHECKIN_REMINDER_FINAL
-  CHECKIN_CONFIRMED
-  CHECKIN_MISSED
-  GUARDIAN_INVITE
-  GUARDIAN_ACTIVATED
-  GUARDIAN_ALERT
-  GUARDIAN_VOTE_UPDATE
-  GUARDIAN_QUORUM_REACHED
-  GUARDIAN_DENIED
-  BENEFICIARY_INVITE
-  BENEFICIARY_INHERITANCE_STARTED
-  BENEFICIARY_ASSET_RECEIVED
-  CONTRACT_DEPLOYED
-  SUBSCRIPTION_CONFIRMED
-  SUBSCRIPTION_EXPIRING
-}
-enum NotificationChannel {
-  EMAIL
-  SMS
-}
-enum NotificationStatus {
-  QUEUED
-  SENT
-  FAILED
-}
-enum SubscriptionStatus {
-  ACTIVE
-  CANCELLED
-  EXPIRED
-  PAST_DUE
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model User {
@@ -100,11 +16,11 @@ model User {
   dateOfBirth       DateTime?
   country           String?
   walletAddress     String?
-  kycStatus         KYCStatus @default(NOT_SUBMITTED)
+  kycStatus         String    @default("NOT_SUBMITTED")
   kycDocumentUrl    String?
   kycDocumentType   String?
   bankDeclaration   String?
-  plan              Plan      @default(FREE)
+  plan              String    @default("FREE")
   isVerified        Boolean   @default(false)
   isOnboarded       Boolean   @default(false)
   termsAcceptedAt   DateTime?
@@ -132,10 +48,10 @@ model Asset {
   userId              String
   user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   assetName           String
-  assetType           AssetType
+  assetType           String
   walletAddress       String?
   tokenCode           String?
-  estimatedValueUsd   Decimal?
+  estimatedValueUsd   Float?
   ipfsHash            String?
   encryptionKeyRef    String?
   releaseDay          Int       @default(0)
@@ -157,7 +73,7 @@ model Beneficiary {
   phone               String?
   walletAddress       String?
   verificationToken   String?
-  status              BeneficiaryStatus @default(INVITED)
+  status              String            @default("INVITED")
   passwordHash        String?
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
@@ -187,7 +103,7 @@ model Guardian {
   email         String
   phone         String?
   inviteToken   String?
-  status        GuardianStatus @default(INVITED)
+  status        String        @default("INVITED")
   passwordHash  String?
   acceptedAt    DateTime?
   createdAt     DateTime      @default(now())
@@ -202,7 +118,7 @@ model GuardianVote {
   contract    Contract  @relation(fields: [contractId], references: [id])
   guardianId  String
   guardian    Guardian  @relation(fields: [guardianId], references: [id])
-  vote        VoteType
+  vote        String
   notes       String?
   votedAt     DateTime  @default(now())
 
@@ -215,7 +131,7 @@ model Contract {
   user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   contractAddress     String?
   network             String        @default("testnet")
-  status              ContractStatus @default(NOT_DEPLOYED)
+  status              String        @default("NOT_DEPLOYED")
   checkinIntervalDays Int           @default(30)
   guardianQuorum      Int           @default(3)
   missedCheckinCount  Int           @default(0)
@@ -266,10 +182,10 @@ model Subscription {
   id                      String              @id @default(uuid())
   userId                  String              @unique
   user                    User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan                    Plan                @default(FREE)
+  plan                    String              @default("FREE")
   razorpaySubscriptionId  String?
   razorpayCustomerId      String?
-  status                  SubscriptionStatus  @default(ACTIVE)
+  status                  String              @default("ACTIVE")
   startedAt               DateTime            @default(now())
   expiresAt               DateTime?
   cancelledAt             DateTime?
@@ -281,9 +197,9 @@ model Notification {
   id              String                @id @default(uuid())
   userId          String
   user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type            NotificationType
-  channel         NotificationChannel
-  status          NotificationStatus    @default(QUEUED)
+  type            String
+  channel         String
+  status          String                @default("QUEUED")
   recipient       String
   subject         String?
   body            String

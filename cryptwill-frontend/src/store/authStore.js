@@ -1,13 +1,19 @@
 // src/store/authStore.js
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export const useAuthStore = create(
-  (set) => ({
-    user: null,
-    isAuthenticated: false,
-    token: null,
-    login: (userData, token) => set({ user: userData, isAuthenticated: true, token: token || null }),
-    logout: () => set({ user: null, isAuthenticated: false, token: null }),
-    updateUser: (data) => set((state) => ({ user: { ...state.user, ...data } })),
-  })
+  persist(
+    (set) => ({
+      user: null,
+      isAuthenticated: false,
+      token: null, // Short-lived token for requests
+      login: (userData, token) => set({ user: userData, isAuthenticated: true, token }),
+      logout: () => set({ user: null, isAuthenticated: false, token: null }),
+      updateUser: (data) => set((state) => ({ user: { ...state.user, ...data } })),
+    }),
+    {
+      name: 'cryptwill-auth', // Persist auth state
+    }
+  )
 );

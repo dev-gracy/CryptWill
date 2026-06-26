@@ -170,17 +170,7 @@ async function refresh(req, res) {
     res.cookie('accessToken', newAccessToken, COOKIE_OPTIONS);
     res.cookie('refreshToken', newRefreshToken, REFRESH_COOKIE_OPTIONS);
 
-    return successResponse(res, 200, {
-      message: 'Tokens refreshed',
-      accessToken: newAccessToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        fullName: user.fullName,
-        plan: user.plan,
-        isOnboarded: user.isOnboarded,
-      },
-    });
+    return successResponse(res, 200, { message: 'Tokens refreshed' });
   } catch (err) {
     return errorResponse(res, 401, 'Invalid or expired refresh token');
   }

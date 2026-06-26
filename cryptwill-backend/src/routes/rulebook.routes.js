@@ -6,6 +6,7 @@ const { protect, requireOnboarded } = require('../middlewares/auth.middleware');
 router.use(protect);
 router.use(requireOnboarded);
 router.get('/', rulebookController.getRulebook);
+router.put('/', rulebookController.saveRules);
 router.post('/save', rulebookController.saveRules);
 router.post('/add', rulebookController.addRule);
 router.put('/:ruleId', rulebookController.updateRule);
