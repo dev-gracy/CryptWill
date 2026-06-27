@@ -21,18 +21,24 @@ async function addBeneficiary(req, res) {
   try {
     const { fullName, email, phone, walletAddress } = req.body;
 
-    const inviteToken = signInviteToken({ email, ownerId: req.user.id, role: 'beneficiary' });
-
     const beneficiary = await prisma.beneficiary.create({
-      data: { userId: req.user.id, fullName, email, phone, walletAddress, verificationToken: inviteToken },
+      data: {
+        userId: req.user.id,
+        fullName,
+        email,
+        phone,
+        walletAddress,
+        status: 'ACTIVE',
+        verificationToken: null,
+      },
     });
 
-    await getEmailQueue().add('beneficiary-invite', {
+    await getEmailQueue().add('beneficiary-added', {
       to: email,
       subject: `${req.user.fullName} has added you as a beneficiary on CryptWill`,
-      html: beneficiaryInviteTemplate(req.user.fullName, fullName, inviteToken),
+      html: beneficiaryAddedTemplate(req.user.fullName, fullName),
       userId: req.user.id,
-      type: 'BENEFICIARY_INVITE',
+      type: 'BENEFICIARY_ADDED',
       channel: 'EMAIL',
     });
 
@@ -159,16 +165,14 @@ async function getBeneficiaryDashboard(req, res) {
   }
 }
 
-function beneficiaryInviteTemplate(ownerName, beneficiaryName, token) {
-  const link = `${process.env.FRONTEND_URL}/beneficiary/invite/${token}`;
+function beneficiaryAddedTemplate(ownerName, beneficiaryName) {
   return `
   <div style="font-family: Inter, sans-serif; background:#0A0A0F; color:#F0F0F5; padding:40px; max-width:480px; margin:auto; border-radius:12px;">
-    <h2 style="color:#4F6EF7;">CryptWill — Beneficiary Invitation</h2>
+    <h2 style="color:#4F6EF7;">CryptWill — Beneficiary Added</h2>
     <p>Hi ${beneficiaryName},</p>
-    <p><strong>${ownerName}</strong> has added you as a beneficiary on CryptWill, a decentralized digital inheritance platform.</p>
-    <p>You will receive their crypto assets automatically if their inheritance plan is ever triggered.</p>
-    <a href="${link}" style="display:inline-block; background:#4F6EF7; color:white; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; margin-top:16px;">Accept Invitation →</a>
-    <p style="color:#9090A0; font-size:14px; margin-top:24px;">This invitation expires in 7 days.</p>
+    <p><strong>${ownerName}</strong> has added you as a beneficiary on CryptWill.</p>
+    <p>You will receive their crypto assets automatically if their inheritance plan is ever triggered. No action is required on your part.</p>
+    <p style="color:#9090A0; font-size:14px; margin-top:24px;">If you have questions, contact ${ownerName} directly.</p>
   </div>`;
 }
 

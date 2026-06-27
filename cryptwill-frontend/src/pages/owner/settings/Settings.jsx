@@ -109,18 +109,22 @@ function ContractTab() {
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(true);
   const [deploying, setDeploying] = useState(false);
-  const [config, setConfig] = useState({ checkinIntervalDays: 30, guardianQuorum: 3 });
+  const [config, setConfig] = useState({ checkinIntervalDays: 30, guardianQuorum: 1, termsAccepted: false });
 
   useEffect(() => {
-    api.get('/contract/status').then(res => setContract(res.data.data))
+    api.get('/contract/status').then(res => setContract(res.data.data?.contract ?? res.data.data))
       .catch(() => {}).finally(() => setLoading(false));
   }, []);
 
   const handleDeploy = async () => {
+    if (!config.termsAccepted) {
+      toast.error('Please accept the Terms & Conditions before deploying');
+      return;
+    }
     setDeploying(true);
     try {
       const res = await api.post('/contract/deploy', config);
-      setContract(res.data.data);
+      setContract(res.data.data?.contract ?? res.data.data);
       toast.success('Smart contract deployed on Stellar testnet!');
     } catch (err) {
       toast.error(err.response?.data?.error || 'Deployment failed');
@@ -201,11 +205,22 @@ function ContractTab() {
                 onChange={e => setConfig(p => ({ ...p, guardianQuorum: parseInt(e.target.value) }))}
                 className="flex h-11 w-full rounded-lg border border-border bg-background px-4 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/50"
               >
-                {[2, 3, 4, 5].map(n => <option key={n} value={n}>{n} guardians</option>)}
+                {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n} guardian{n > 1 ? 's' : ''}</option>)}
               </select>
             </div>
           </div>
-          <Button onClick={handleDeploy} isLoading={deploying} className="w-full">
+          <label className="flex items-start gap-3 p-4 rounded-xl border border-border bg-background cursor-pointer">
+            <input
+              type="checkbox"
+              checked={config.termsAccepted}
+              onChange={e => setConfig(p => ({ ...p, termsAccepted: e.target.checked }))}
+              className="mt-1 accent-brand"
+            />
+            <span className="text-sm text-text-secondary">
+              I accept the Terms & Conditions and understand that deploying activates my Dead Man&apos;s Switch on Stellar testnet.
+            </span>
+          </label>
+          <Button onClick={handleDeploy} isLoading={deploying} className="w-full" disabled={!config.termsAccepted}>
             <Activity className="w-4 h-4 mr-2" />
             Deploy Smart Contract
           </Button>
@@ -216,15 +231,98 @@ function ContractTab() {
 }
 
 function SubscriptionTab({ user }) {
+  const updateUser = useAuthStore(s => s.updateUser);
+  const navigate = useNavigate();
+  const [upgrading, setUpgrading] = useState(null);
+
+  const handleUpgrade = async (plan) => {
+    if (plan === 'FREE') {
+      toast.info('Contact support to downgrade your plan');
+      return;
+    }
+    setUpgrading(plan);
+    try {
+      const res = await api.post('/subscription/create', { plan, billing: 'monthly' });
+      const data = res.data.data;
+
+      if (data.demo) {
+        updateUser({ plan });
+        toast.success(data.message || `Upgraded to ${plan}!`);
+        if (plan === 'ENTERPRISE') {
+          navigate('/app/lawyer-team');
+        }
+        return;
+      }
+
+      const { order, razorpayKeyId } = data;
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.body.appendChild(script);
+      });
+
+      const rzp = new window.Razorpay({
+        key: razorpayKeyId,
+        amount: order.amount,
+        currency: order.currency,
+        name: 'CryptWill',
+        description: `${plan} Plan`,
+        order_id: order.id,
+        handler: async (response) => {
+          try {
+            await api.post('/subscription/verify', {
+              ...response,
+              plan,
+              billing: 'monthly',
+            });
+            updateUser({ plan });
+            toast.success(`Upgraded to ${plan}!`);
+            if (plan === 'ENTERPRISE') {
+              navigate('/app/lawyer-team');
+            }
+          } catch {
+            toast.error('Payment verification failed');
+          }
+        },
+        theme: { color: '#4F6EF7' },
+      });
+      rzp.open();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Upgrade failed');
+    } finally {
+      setUpgrading(null);
+    }
+  };
+
   const plans = [
     {
       id: 'FREE', name: 'Free', price: '$0', period: 'forever',
       features: ['4 beneficiaries', '5 guardians', '30-day check-in', '500MB vault', 'Email notifications']
     },
     {
-      id: 'PRO', name: 'Pro', price: '$9.99', period: '/month',
+      id: 'PRO', name: 'Pro', price: '₹999', period: '/month',
       features: ['10 beneficiaries', '7 guardians', 'Custom intervals', '5GB vault', 'SMS alerts', 'PDF will export', 'Priority support'],
       highlight: true
+    },
+    {
+      id: 'ENTERPRISE',
+      name: 'Enterprise',
+      price: '₹3,999/mo',
+      period: '/month',
+      features: [
+        'Unlimited assets',
+        'Unlimited beneficiaries', 
+        'Unlimited guardians',
+        'Lawyer management team',
+        'Custom check-in intervals',
+        'SMS alerts',
+        '50GB encrypted vault',
+        'Priority support',
+        'PDF will generation',
+        'Dedicated account manager',
+      ]
     },
   ];
 
@@ -265,7 +363,9 @@ function SubscriptionTab({ user }) {
               <Button
                 className="w-full"
                 variant={plan.highlight ? 'primary' : 'outline'}
-                onClick={() => toast.info('Payment integration coming soon!')}
+                isLoading={upgrading === plan.id}
+                disabled={!!upgrading}
+                onClick={() => handleUpgrade(plan.id)}
               >
                 {user?.plan === 'PRO' && plan.id === 'FREE' ? 'Downgrade' : `Upgrade to ${plan.name}`}
               </Button>

@@ -141,7 +141,7 @@ async function triggerGuardianAlert(contract) {
   if (io) io.to(`user:${contract.userId}`).emit('contract-triggered', { contractId: contract.id });
 
   for (const guardian of guardians) {
-    const voteLink = `${process.env.FRONTEND_URL}/guardian/dashboard`;
+    const voteLink = `${process.env.FRONTEND_URL}/guardian`;
     
     await getEmailQueue().add('guardian-alert', {
       to: guardian.email,

@@ -8,7 +8,10 @@ export const useAuthStore = create(
       user: null,
       isAuthenticated: false,
       token: null, // Short-lived token for requests
-      login: (userData, token) => set({ user: userData, isAuthenticated: true, token }),
+      login: (userData, token) => {
+        const resolvedRole = userData?.role || 'OWNER';
+        set({ user: { ...userData, role: resolvedRole }, isAuthenticated: true, token });
+      },
       logout: () => set({ user: null, isAuthenticated: false, token: null }),
       updateUser: (data) => set((state) => ({ user: { ...state.user, ...data } })),
     }),

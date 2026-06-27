@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const assetController = require('../controllers/asset.controller');
-const { protect, requireOnboarded } = require('../middlewares/auth.middleware');
+const { protect } = require('../middlewares/auth.middleware');
+// FIX: removed requireOnboarded — new users need to add assets DURING onboarding,
+// the circular gate was blocking all asset saves.
 
 router.use(protect);
-router.use(requireOnboarded);
 router.get('/', assetController.listAssets);
 router.post('/', assetController.createAsset);
 router.get('/:id', assetController.getAsset);

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Lock, Eye, EyeOff, CheckCircle, Flower2, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
+import { useAuthStore } from '../../store/authStore';
 
 const PETALS = Array.from({ length: 14 }, (_, i) => ({
   id: i,
@@ -39,6 +40,7 @@ function Petal({ x, delay, duration, size, rotation, opacity, shape }) {
 export default function GuardianInvite() {
   const { token } = useParams();
   const navigate = useNavigate();
+  const login = useAuthStore(s => s.login);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showPw, setShowPw] = useState(false);
@@ -52,7 +54,15 @@ export default function GuardianInvite() {
     if (password.length < 8) return toast.error('Password must be at least 8 characters');
     setLoading(true);
     try {
-      await api.post('/guardians/accept-invite', { token, password });
+      const res = await api.post('/guardians/accept-invite', { token, password });
+      const guardian = res.data.data?.guardian;
+      const guardianToken = res.data.data?.token;
+      if (guardian && guardianToken) {
+        login({ ...guardian, role: 'GUARDIAN' }, guardianToken);
+        toast.success('Guardian role accepted!', { icon: '🌸' });
+        navigate('/guardian');
+        return;
+      }
       setDone(true);
       toast.success('Guardian role accepted!', { icon: '🌸' });
     } catch (err) {

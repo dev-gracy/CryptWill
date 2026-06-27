@@ -25,11 +25,23 @@ const rulebookRoutes = require('./routes/rulebook.routes');
 const app = express();
 const server = http.createServer(app);
 const frontendOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
+const allowedOrigins = new Set([
+  frontendOrigin,
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+]);
+const corsOptions = {
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+    return callback(new Error(`Origin ${origin} is not allowed by CORS`));
+  },
+  credentials: true,
+};
 
 // Socket.io for real-time updates
 const io = new Server(server, {
   cors: {
-    origin: frontendOrigin,
+    origin: Array.from(allowedOrigins),
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -50,7 +62,7 @@ io.on('connection', (socket) => {
 
 // Middleware
 app.use(helmet());
-app.use(cors({ origin: frontendOrigin, credentials: true }));
+app.use(cors(corsOptions));
 
 // Stripe/Razorpay webhooks need raw body, so we conditionally parse JSON
 app.use('/api/subscription/webhook', express.raw({ type: 'application/json' }));
@@ -61,14 +73,17 @@ app.use(cookieParser());
 // Rate Limiting (apply to auth routes specifically)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 mins
-  max: 10,
+  max: process.env.NODE_ENV === 'production' ? 10 : 100, // relaxed in dev
   message: { success: false, error: 'Too many requests from this IP, please try again after 15 minutes' },
+  skip: (req) => process.env.NODE_ENV !== 'production', // skip entirely in dev
 });
 
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/assets', assetRoutes);
 app.use('/api/beneficiaries', beneficiaryRoutes);
+const lawyerRoutes = require('./routes/lawyer.routes');
+app.use('/api/lawyers', lawyerRoutes);
 app.use('/api/guardians', guardianRoutes);
 app.use('/api/contract', contractRoutes);
 app.use('/api/checkin', checkinRoutes);

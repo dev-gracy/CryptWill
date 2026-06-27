@@ -1,8 +1,17 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 
+function getDefaultApiBase() {
+  if (typeof window === 'undefined') {
+    return 'http://localhost:5000/api';
+  }
+
+  const { protocol, hostname } = window.location;
+  return `${protocol}//${hostname}:5000/api`;
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_URL || getDefaultApiBase(),
   withCredentials: true, // For HTTP-only cookies
 });
 
@@ -26,6 +35,11 @@ api.interceptors.response.use(
     
     // If error is 401 and we haven't retried yet
     if (error.response?.status === 401 && !originalRequest._retry) {
+      const url = originalRequest.url || '';
+      if (url.includes('/guardians/') || url.includes('/beneficiaries/my-portal')) {
+        return Promise.reject(error);
+      }
+
       originalRequest._retry = true;
       
       try {

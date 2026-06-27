@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Plus, Trash2, Edit3, X, Mail, Phone, Wallet,
-  UserPlus, CheckCircle2, Clock, AlertCircle, Send, Percent
+  UserPlus, CheckCircle2, Clock, AlertCircle, Percent
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
@@ -44,7 +44,7 @@ function BeneficiaryModal({ beneficiary, onClose, onSave }) {
         const res = await api.post('/beneficiaries', formData);
         onSave(res.data.data.beneficiary, 'add');
       }
-      toast.success(isEdit ? 'Beneficiary updated!' : 'Beneficiary invited!');
+      toast.success(isEdit ? 'Beneficiary updated!' : 'Beneficiary added!');
       onClose();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to save');
@@ -100,19 +100,10 @@ function BeneficiaryModal({ beneficiary, onClose, onSave }) {
             </div>
           ))}
 
-          {!isEdit && (
-            <div className="p-3 rounded-lg bg-brand/5 border border-brand/20 flex items-start gap-2">
-              <Send className="w-4 h-4 text-brand mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-text-secondary">
-                An invitation email will be sent to this person to set up their beneficiary account.
-              </p>
-            </div>
-          )}
-
           <div className="flex gap-3 pt-2">
             <Button type="button" variant="secondary" className="flex-1" onClick={onClose}>Cancel</Button>
             <Button type="submit" isLoading={saving} className="flex-1">
-              {isEdit ? 'Save Changes' : 'Send Invite'}
+              {isEdit ? 'Save Changes' : 'Add Beneficiary'}
             </Button>
           </div>
         </form>
@@ -149,14 +140,6 @@ export default function Beneficiaries() {
     }
   };
 
-  const handleResendInvite = async (id) => {
-    try {
-      await api.post(`/beneficiaries/${id}/resend-invite`);
-      toast.success('Invitation resent!');
-    } catch {
-      toast.error('Failed to resend invite');
-    }
-  };
 
   if (loading) {
     return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" /></div>;
@@ -247,15 +230,6 @@ export default function Beneficiaries() {
                   </div>
 
                   <div className="flex gap-1.5 flex-shrink-0">
-                    {ben.status === 'INVITED' && (
-                      <button
-                        onClick={() => handleResendInvite(ben.id)}
-                        className="w-8 h-8 rounded-lg hover:bg-warning/10 flex items-center justify-center text-text-muted hover:text-warning transition-colors"
-                        title="Resend invite"
-                      >
-                        <Send className="w-4 h-4" />
-                      </button>
-                    )}
                     <button
                       onClick={() => { setEditingBen(ben); setShowModal(true); }}
                       className="w-8 h-8 rounded-lg hover:bg-brand/10 flex items-center justify-center text-text-muted hover:text-brand transition-colors"

@@ -11,18 +11,22 @@ async function deployContract(req, res) {
     if (!termsAccepted) return errorResponse(res, 400, 'You must accept the Terms & Conditions before deploying');
 
     const existing = await prisma.contract.findUnique({ where: { userId: req.user.id } });
-    if (existing && existing.status !== 'NOT_DEPLOYED') {
+    if (existing && !['NOT_DEPLOYED', 'CANCELLED'].includes(existing.status)) {
       return errorResponse(res, 409, 'Contract already deployed');
     }
 
+    const minGuardians = 1;
     const guardians = await prisma.guardian.findMany({ where: { userId: req.user.id, status: 'ACTIVE' } });
-    if (guardians.length < 3) return errorResponse(res, 400, 'At least 3 active guardians required before deployment');
+    if (guardians.length < minGuardians) {
+      return errorResponse(res, 400, `At least ${minGuardians} active guardian${minGuardians > 1 ? 's' : ''} required before deployment`);
+    }
 
     const assets = await prisma.asset.findMany({ where: { userId: req.user.id, isActive: true } });
     if (assets.length === 0) return errorResponse(res, 400, 'At least 1 asset required before deployment');
 
     const interval = parseInt(checkinIntervalDays) || 30;
-    const quorum = parseInt(guardianQuorum) || 3;
+    const requestedQuorum = parseInt(guardianQuorum) || 1;
+    const quorum = Math.min(Math.max(requestedQuorum, 1), guardians.length);
 
     // Deploy Soroban contract via stellar service
     let contractAddress = null;

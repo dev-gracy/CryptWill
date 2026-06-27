@@ -4,7 +4,7 @@ import { useThemeStore } from './store/themeStore';
 import { useEffect } from 'react';
 
 // Layouts
-import MainLayout from './components/layout/MainLayout';
+import { MainLayout } from './components/layout/MainLayout';
 import AuthLayout from './components/layout/AuthLayout';
 
 // Public Pages
@@ -14,6 +14,7 @@ import Landing from './pages/public/Landing';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
 import VerifyOtp from './pages/auth/VerifyOtp';
+import ForgotPassword from './pages/auth/ForgotPassword';
 
 // Owner Pages
 import Onboarding from './pages/owner/Onboarding';
@@ -24,6 +25,7 @@ import Beneficiaries from './pages/owner/Beneficiaries';
 import Guardians from './pages/owner/Guardians';
 import Rulebook from './pages/owner/Rulebook';
 import Settings from './pages/owner/settings/Settings';
+import LawyerTeam from './pages/owner/LawyerTeam';
 
 // Beneficiary Pages
 import BeneficiaryDashboard from './pages/beneficiary/BeneficiaryDashboard';
@@ -32,6 +34,7 @@ import BeneficiaryDashboard from './pages/beneficiary/BeneficiaryDashboard';
 import GuardianDashboard from './pages/guardian/GuardianDashboard';
 import GuardianLogin from './pages/guardian/GuardianLogin';
 import GuardianInvite from './pages/guardian/GuardianInvite';
+import GuardianSignup from './pages/guardian/GuardianSignup';
 
 // Checkin
 import InstantCheckin from './pages/public/InstantCheckin';
@@ -39,8 +42,23 @@ import InstantCheckin from './pages/public/InstantCheckin';
 // Protected Route Wrapper
 const ProtectedRoute = ({ children, role = 'OWNER' }) => {
   const { isAuthenticated, user } = useAuthStore();
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
-  // Only check onboarding for OWNER role
+  const currentRole = user?.role || 'OWNER';
+
+  if (!isAuthenticated) {
+    if (role === 'GUARDIAN') return <Navigate to="/guardian/login" replace />;
+    return <Navigate to="/login" replace />;
+  }
+
+  if (role === 'OWNER' && currentRole !== 'OWNER') {
+    if (currentRole === 'GUARDIAN') return <Navigate to="/guardian/login" replace />;
+    if (currentRole === 'BENEFICIARY') return <Navigate to="/beneficiary" replace />;
+    return <Navigate to="/login" replace />;
+  }
+
+  if (role !== 'OWNER' && currentRole !== role) {
+    if (role === 'GUARDIAN') return <Navigate to="/guardian/login" replace />;
+    return <Navigate to="/login" replace />;
+  }
   if (role === 'OWNER' && user && !user.isOnboarded) {
     return <Navigate to="/onboarding" replace />;
   }
@@ -79,6 +97,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/verify-otp" element={<VerifyOtp />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
         </Route>
 
         {/* Owner Onboarding */}
@@ -92,6 +111,7 @@ function App() {
           <Route path="beneficiaries" element={<Beneficiaries />} />
           <Route path="guardians" element={<Guardians />} />
           <Route path="rulebook" element={<Rulebook />} />
+          <Route path="lawyer-team" element={<LawyerTeam />} />
           <Route path="settings" element={<Settings />} />
         </Route>
 
@@ -102,9 +122,12 @@ function App() {
 
         {/* Guardian Public Routes */}
         <Route path="/guardian/login" element={<GuardianLogin />} />
+        <Route path="/guardian/signup" element={<GuardianSignup />} />
+        <Route path="/guardian/signup/:token" element={<GuardianSignup />} />
         <Route path="/guardian/invite/:token" element={<GuardianInvite />} />
 
         {/* Guardian Portal */}
+        <Route path="/guardian/dashboard" element={<Navigate to="/guardian" replace />} />
         <Route path="/guardian" element={<ProtectedRoute role="GUARDIAN"><MainLayout role="GUARDIAN" /></ProtectedRoute>}>
           <Route index element={<GuardianDashboard />} />
         </Route>

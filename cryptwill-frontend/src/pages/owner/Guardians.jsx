@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   UserCheck, Plus, Trash2, Edit3, X, Mail, Phone,
-  ShieldCheck, Clock, AlertCircle, CheckCircle2, Send, ThumbsUp, ThumbsDown, Info
+  ShieldCheck, Clock, AlertCircle, CheckCircle2, Send, ThumbsUp, ThumbsDown, Info, Copy
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
@@ -37,6 +37,9 @@ function GuardianModal({ guardian, onClose, onSave }) {
       } else {
         const res = await api.post('/guardians', formData);
         onSave(res.data.data.guardian, 'add');
+        if (res.data.data.syncedToPortal) {
+          toast.success('Guardian invited — they will see it in their Guardian Portal', { duration: 5000 });
+        }
       }
       toast.success(isEdit ? 'Guardian updated!' : 'Guardian invited!');
       onClose();
@@ -150,6 +153,20 @@ export default function Guardians() {
       toast.success('Guardian removed');
     } catch {
       toast.error('Failed to remove guardian');
+    }
+  };
+
+  const copyInviteLink = async (guardian) => {
+    if (!guardian?.inviteToken) {
+      toast.error('No invite link available for this guardian');
+      return;
+    }
+    const inviteLink = `${window.location.origin}/guardian/invite/${guardian.inviteToken}`;
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      toast.success('Invite link copied');
+    } catch {
+      toast.error('Failed to copy invite link');
     }
   };
 
@@ -281,6 +298,15 @@ export default function Guardians() {
                 )}
 
                 <div className="flex gap-1.5 flex-shrink-0">
+                  {g.status !== 'ACTIVE' && g.inviteToken && (
+                    <button
+                      onClick={() => copyInviteLink(g)}
+                      className="w-8 h-8 rounded-lg hover:bg-success/10 flex items-center justify-center text-text-muted hover:text-success transition-colors"
+                      title="Copy invite link"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
+                  )}
                   <button
                     onClick={() => { setEditingGuardian(g); setShowModal(true); }}
                     className="w-8 h-8 rounded-lg hover:bg-brand/10 flex items-center justify-center text-text-muted hover:text-brand transition-colors"

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Mail, Lock, Eye, EyeOff, LogIn, Flower2 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -7,6 +7,7 @@ import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 
 /* ── Floating petal shapes ── */
+const PETAL_COLORS = ['#D4A57A', '#C8956B', '#B8836A', '#E8C4A8', '#D4B896'];
 const PETALS = Array.from({ length: 18 }, (_, i) => ({
   id: i,
   x: Math.random() * 100,
@@ -16,11 +17,10 @@ const PETALS = Array.from({ length: 18 }, (_, i) => ({
   rotation: Math.random() * 360,
   opacity: 0.25 + Math.random() * 0.45,
   shape: i % 3, // 0=rose, 1=leaf, 2=daisy
+  color: PETAL_COLORS[Math.floor(Math.random() * PETAL_COLORS.length)],
 }));
 
-function Petal({ x, delay, duration, size, rotation, opacity, shape }) {
-  const colors = ['#D4A57A', '#C8956B', '#B8836A', '#E8C4A8', '#D4B896'];
-  const color = colors[Math.floor(Math.random() * colors.length)];
+function Petal({ x, delay, duration, size, rotation, opacity, shape, color }) {
 
   const petalPath =
     shape === 0
@@ -89,7 +89,8 @@ export default function GuardianLogin() {
     try {
       const res = await api.post('/guardians/login', form);
       const guardian = res.data.data?.guardian;
-      login({ ...guardian, role: 'GUARDIAN' }, null);
+      const token = res.data.data?.token;
+      login({ ...guardian, role: 'GUARDIAN' }, token);
       toast.success(`Welcome, ${guardian.fullName}!`);
       navigate('/guardian');
     } catch (err) {
@@ -354,14 +355,13 @@ export default function GuardianLogin() {
               transition={{ delay: 0.7 }}
             >
               Received an invitation?{' '}
-              <button
-                type="button"
-                onClick={() => toast('Please use the invitation link sent to your email to first create your account.', { icon: '🌸' })}
+              <Link
+                to="/guardian/signup"
                 className="font-semibold underline underline-offset-2 hover:opacity-70 transition-opacity"
                 style={{ color: '#b8836a' }}
               >
-                Accept invite first →
-              </button>
+                Create guardian account
+              </Link>
             </motion.p>
 
             <motion.p

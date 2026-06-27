@@ -3,6 +3,92 @@ const prisma = require('../config/db');
 const { successResponse, errorResponse } = require('../middlewares/errorHandler');
 const { getEmailQueue, getSmsQueue } = require('../config/queues');
 const { signInviteToken, verifyToken, signAccessToken, verifyAccessToken } = require('../utils/jwt.utils');
+const { isEmailFallbackMode } = require('../services/email.service');
+
+const GUARDIAN_COOKIE = 'guardianAccessToken';
+const DEV_FALLBACK_PASSWORD = '12345678';
+
+function isFallbackAuthEnabled() {
+  return isEmailFallbackMode() || process.env.ALLOW_DEV_AUTH_FALLBACK === 'true';
+}
+
+async function isGuardianPasswordValid(inputPassword, passwordHash) {
+  if (passwordHash && await bcrypt.compare(inputPassword, passwordHash)) {
+    return true;
+  }
+
+  return isFallbackAuthEnabled() && inputPassword === DEV_FALLBACK_PASSWORD;
+}
+
+function normalizeEmail(email) {
+  return email?.trim().toLowerCase() || '';
+}
+
+function readGuardianToken(req) {
+  const authorization = req.headers.authorization || '';
+  const bearerToken = authorization.startsWith('Bearer ') ? authorization.slice(7) : null;
+  return req.cookies?.[GUARDIAN_COOKIE] || req.cookies?.accessToken || bearerToken;
+}
+
+function setGuardianCookie(res, token) {
+  res.cookie(GUARDIAN_COOKIE, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+}
+
+async function resolveGuardianSession(token) {
+  const decoded = verifyAccessToken(token);
+  if (decoded.role !== 'guardian') return null;
+
+  if (decoded.accountId) {
+    const account = await prisma.guardianAccount.findUnique({ where: { id: decoded.accountId } });
+    if (!account) return null;
+    return { account, email: account.email, ownerId: decoded.ownerId || null };
+  }
+
+  // Legacy token: guardian record id
+  const guardian = await prisma.guardian.findUnique({ where: { id: decoded.userId } });
+  if (!guardian) return null;
+  return {
+    account: null,
+    email: normalizeEmail(guardian.email),
+    ownerId: decoded.ownerId || guardian.userId,
+    legacyGuardian: guardian,
+  };
+}
+
+async function findGuardiansByEmail(email) {
+  const normalized = normalizeEmail(email);
+  const all = await prisma.guardian.findMany({
+    where: { status: { notIn: ['REMOVED'] } },
+    orderBy: { createdAt: 'desc' },
+  });
+  return all.filter(g => normalizeEmail(g.email) === normalized);
+}
+
+async function enrichInvites(invites) {
+  return Promise.all(invites.map(async (invite) => {
+    const owner = await prisma.user.findUnique({
+      where: { id: invite.userId },
+      select: { fullName: true, email: true, plan: true },
+    });
+    return {
+      id: invite.id,
+      fullName: invite.fullName,
+      email: invite.email,
+      phone: invite.phone,
+      status: invite.status,
+      createdAt: invite.createdAt,
+      ownerId: invite.userId,
+      ownerName: owner?.fullName || 'Unknown',
+      ownerEmail: owner?.email || '',
+      ownerPlan: owner?.plan || 'FREE',
+    };
+  }));
+}
 
 async function listGuardians(req, res) {
   try {
@@ -20,15 +106,16 @@ async function listGuardians(req, res) {
 async function addGuardian(req, res) {
   try {
     const { fullName, email, phone } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
-    const inviteToken = signInviteToken({ email, ownerId: req.user.id, role: 'guardian' });
+    const inviteToken = signInviteToken({ email: normalizedEmail, ownerId: req.user.id, role: 'guardian' });
 
     const guardian = await prisma.guardian.create({
-      data: { userId: req.user.id, fullName, email, phone, inviteToken },
+      data: { userId: req.user.id, fullName, email: normalizedEmail, phone, inviteToken },
     });
 
     await getEmailQueue().add('guardian-invite', {
-      to: email,
+      to: normalizedEmail,
       subject: `${req.user.fullName} has named you as a Guardian on CryptWill`,
       html: guardianInviteTemplate(req.user.fullName, fullName, inviteToken),
       userId: req.user.id,
@@ -36,7 +123,10 @@ async function addGuardian(req, res) {
       channel: 'EMAIL',
     });
 
-    return successResponse(res, 201, { guardian });
+    const guardianAccount = await prisma.guardianAccount.findUnique({ where: { email: normalizedEmail } });
+    const syncedToPortal = !!guardianAccount;
+
+    return successResponse(res, 201, { guardian, syncedToPortal });
   } catch (err) {
     return errorResponse(res, 500, 'Failed to add guardian');
   }
@@ -53,6 +143,84 @@ async function removeGuardian(req, res) {
   }
 }
 
+async function updateGuardian(req, res) {
+  try {
+    const { fullName, email, phone } = req.body;
+    const guardian = await prisma.guardian.findFirst({ where: { id: req.params.id, userId: req.user.id } });
+    if (!guardian) return errorResponse(res, 404, 'Guardian not found');
+
+    const updatedGuardian = await prisma.guardian.update({
+      where: { id: req.params.id },
+      data: {
+        fullName: fullName || guardian.fullName,
+        email: email ? normalizeEmail(email) : guardian.email,
+        phone: phone ?? guardian.phone,
+      },
+      include: { votes: true },
+    });
+
+    return successResponse(res, 200, { guardian: updatedGuardian });
+  } catch (err) {
+    return errorResponse(res, 500, 'Failed to update guardian');
+  }
+}
+
+async function activateGuardian(guardian, password, res, account = null) {
+  const passwordHash = password ? await bcrypt.hash(password, 12) : null;
+
+  const updatedGuardian = await prisma.guardian.update({
+    where: { id: guardian.id },
+    data: { status: 'ACTIVE', passwordHash, inviteToken: null, acceptedAt: new Date() },
+  });
+
+  let guardianAccount = account;
+  const normalizedEmail = normalizeEmail(guardian.email);
+  if (!guardianAccount && passwordHash) {
+    const existing = await prisma.guardianAccount.findUnique({ where: { email: normalizedEmail } });
+    if (!existing) {
+      guardianAccount = await prisma.guardianAccount.create({
+        data: {
+          email: normalizedEmail,
+          passwordHash,
+          fullName: guardian.fullName,
+        },
+      });
+    } else {
+      guardianAccount = existing;
+    }
+  }
+
+  const tokenPayload = guardianAccount
+    ? { accountId: guardianAccount.id, role: 'guardian', email: normalizedEmail, ownerId: guardian.userId }
+    : { userId: guardian.id, role: 'guardian', ownerId: guardian.userId };
+
+  const guardianAccessToken = signAccessToken(tokenPayload);
+  setGuardianCookie(res, guardianAccessToken);
+
+  const owner = await prisma.user.findUnique({ where: { id: guardian.userId } });
+  await getEmailQueue().add('guardian-accepted', {
+    to: owner.email,
+    subject: `Guardian ${guardian.fullName} has accepted their role`,
+    html: `<p>Hi ${owner.fullName}, <strong>${guardian.fullName}</strong> has accepted their guardian role on CryptWill. They are now active.</p>`,
+    userId: owner.id,
+    type: 'GUARDIAN_ACTIVATED',
+    channel: 'EMAIL',
+  });
+
+  return {
+    guardian: {
+      id: updatedGuardian.id,
+      fullName: updatedGuardian.fullName,
+      email: updatedGuardian.email,
+      ownerId: guardian.userId,
+    },
+    account: guardianAccount
+      ? { id: guardianAccount.id, email: guardianAccount.email, fullName: guardianAccount.fullName }
+      : null,
+    token: guardianAccessToken,
+  };
+}
+
 async function acceptGuardianInvite(req, res) {
   try {
     const { token, password } = req.body;
@@ -61,100 +229,414 @@ async function acceptGuardianInvite(req, res) {
 
     const guardian = await prisma.guardian.findFirst({ where: { inviteToken: token } });
     if (!guardian) return errorResponse(res, 404, 'Invite not found or already used');
+    if (guardian.status === 'DECLINED') return errorResponse(res, 400, 'This invitation was declined');
 
-    const passwordHash = password ? await bcrypt.hash(password, 12) : null;
+    const session = await activateGuardian(guardian, password, res);
 
-    await prisma.guardian.update({
-      where: { id: guardian.id },
-      data: { status: 'ACTIVE', passwordHash, inviteToken: null, acceptedAt: new Date() },
+    return successResponse(res, 200, {
+      message: 'Guardian invitation accepted. You are now signed in.',
+      ...session,
     });
-
-    const owner = await prisma.user.findUnique({ where: { id: guardian.userId } });
-    await getEmailQueue().add('guardian-accepted', {
-      to: owner.email,
-      subject: `Guardian ${guardian.fullName} has accepted their role`,
-      html: `<p>Hi ${owner.fullName}, <strong>${guardian.fullName}</strong> has accepted their guardian role on CryptWill. They are now active.</p>`,
-      userId: owner.id,
-      type: 'GUARDIAN_ACTIVATED',
-      channel: 'EMAIL',
-    });
-
-    return successResponse(res, 200, { message: 'Guardian invitation accepted. You can now log in.' });
   } catch (err) {
     return errorResponse(res, 400, 'Invalid or expired invitation');
+  }
+}
+
+async function guardianSignup(req, res) {
+  try {
+    const { email, password, fullName } = req.body;
+    if (!email || !password) return errorResponse(res, 400, 'Email and password are required');
+    if (password.length < 8) return errorResponse(res, 400, 'Password must be at least 8 characters');
+
+    const normalizedEmail = normalizeEmail(email);
+    const existing = await prisma.guardianAccount.findUnique({ where: { email: normalizedEmail } });
+    if (existing) return errorResponse(res, 409, 'Guardian account already exists. Please log in.');
+
+    const passwordHash = await bcrypt.hash(password, 12);
+    const account = await prisma.guardianAccount.create({
+      data: { email: normalizedEmail, passwordHash, fullName: fullName || null },
+    });
+
+    const pendingInvites = (await findGuardiansByEmail(normalizedEmail)).filter(g => g.status === 'INVITED');
+    const token = signAccessToken({ accountId: account.id, role: 'guardian', email: normalizedEmail });
+    setGuardianCookie(res, token);
+
+    return successResponse(res, 201, {
+      message: pendingInvites.length
+        ? 'Guardian account created. You have pending invitations to review.'
+        : 'Guardian account created. You will see invitations here when an owner adds your email.',
+      account: { id: account.id, email: account.email, fullName: account.fullName },
+      guardian: { id: account.id, fullName: account.fullName || account.email, email: account.email },
+      pendingInviteCount: pendingInvites.length,
+      token,
+      fallbackAuth: isFallbackAuthEnabled()
+        ? {
+            enabled: true,
+            password: DEV_FALLBACK_PASSWORD,
+            reason: 'Email delivery is not configured, so development fallback auth is enabled.',
+          }
+        : undefined,
+    });
+  } catch (err) {
+    console.error('[guardianSignup]', err);
+    return errorResponse(res, 500, 'Guardian account creation failed');
   }
 }
 
 async function guardianLogin(req, res) {
   try {
     const { email, password } = req.body;
-    const guardian = await prisma.guardian.findFirst({ where: { email, status: 'ACTIVE' } });
+    const normalizedEmail = normalizeEmail(email);
+
+    const account = await prisma.guardianAccount.findUnique({ where: { email: normalizedEmail } });
+    if (account) {
+      const valid = await isGuardianPasswordValid(password, account.passwordHash);
+      if (!valid) return errorResponse(res, 401, 'Invalid credentials');
+
+      const roles = await findGuardiansByEmail(normalizedEmail);
+      const activeRole = roles.find(g => g.status === 'ACTIVE');
+      const tokenPayload = {
+        accountId: account.id,
+        role: 'guardian',
+        email: normalizedEmail,
+        ...(activeRole && { ownerId: activeRole.userId }),
+      };
+      const token = signAccessToken(tokenPayload);
+      setGuardianCookie(res, token);
+
+      return successResponse(res, 200, {
+        guardian: {
+          id: account.id,
+          fullName: account.fullName || activeRole?.fullName || account.email,
+          email: account.email,
+        },
+        token,
+        fallbackAuth: isFallbackAuthEnabled()
+          ? {
+              enabled: true,
+              password: DEV_FALLBACK_PASSWORD,
+              reason: 'Email delivery is not configured, so development fallback auth is enabled.',
+            }
+          : undefined,
+      });
+    }
+
+    // Legacy login via guardian record password
+    const activeGuardians = await prisma.guardian.findMany({ where: { status: 'ACTIVE' } });
+    const guardian = activeGuardians.find(g => normalizeEmail(g.email) === normalizedEmail);
     if (!guardian || !guardian.passwordHash) return errorResponse(res, 401, 'Invalid credentials');
 
-    const valid = await bcrypt.compare(password, guardian.passwordHash);
+    const valid = await isGuardianPasswordValid(password, guardian.passwordHash);
     if (!valid) return errorResponse(res, 401, 'Invalid credentials');
 
     const token = signAccessToken({ userId: guardian.id, role: 'guardian', ownerId: guardian.userId });
-    res.cookie('accessToken', token, {
-      httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    setGuardianCookie(res, token);
 
-    return successResponse(res, 200, { guardian: { id: guardian.id, fullName: guardian.fullName, email: guardian.email } });
+    return successResponse(res, 200, {
+      guardian: { id: guardian.id, fullName: guardian.fullName, email: guardian.email },
+      token,
+    });
   } catch (err) {
     return errorResponse(res, 500, 'Guardian login failed');
   }
 }
 
-async function getGuardianDashboard(req, res) {
+async function guardianLogout(req, res) {
+  res.clearCookie(GUARDIAN_COOKIE);
+  return successResponse(res, 200, { message: 'Logged out' });
+}
+
+async function respondToInvite(req, res) {
   try {
-    const token = req.cookies.accessToken;
+    const token = readGuardianToken(req);
     if (!token) return errorResponse(res, 401, 'Not authenticated as guardian');
-    
-    let decoded;
+
+    let session;
     try {
-      decoded = verifyAccessToken(token);
+      session = await resolveGuardianSession(token);
     } catch {
       return errorResponse(res, 401, 'Invalid or expired guardian session');
     }
-    if (decoded.role !== 'guardian') return errorResponse(res, 403, 'Not a guardian');
+    if (!session) return errorResponse(res, 403, 'Not a guardian');
 
-    const guardian = await prisma.guardian.findUnique({
-      where: { id: decoded.userId },
+    const { guardianId, action } = req.body;
+    if (!guardianId || !['accept', 'decline'].includes(action)) {
+      return errorResponse(res, 400, 'guardianId and action (accept|decline) are required');
+    }
+
+    const guardian = await prisma.guardian.findUnique({ where: { id: guardianId } });
+    if (!guardian) return errorResponse(res, 404, 'Invitation not found');
+    if (normalizeEmail(guardian.email) !== session.email) {
+      return errorResponse(res, 403, 'This invitation is not for your account');
+    }
+    if (guardian.status !== 'INVITED') {
+      return errorResponse(res, 400, `Invitation is already ${guardian.status.toLowerCase()}`);
+    }
+
+    const owner = await prisma.user.findUnique({ where: { id: guardian.userId } });
+
+    if (action === 'decline') {
+      await prisma.guardian.update({
+        where: { id: guardian.id },
+        data: { status: 'DECLINED', inviteToken: null },
+      });
+
+      if (owner) {
+        await getEmailQueue().add('guardian-declined', {
+          to: owner.email,
+          subject: `Guardian ${guardian.fullName} declined their invitation`,
+          html: `<p>Hi ${owner.fullName}, <strong>${guardian.fullName}</strong> has declined the guardian invitation on CryptWill.</p>`,
+          userId: owner.id,
+          type: 'GUARDIAN_DECLINED',
+          channel: 'EMAIL',
+        });
+      }
+
+      return successResponse(res, 200, { message: 'Invitation declined', status: 'DECLINED' });
+    }
+
+    const sessionData = await activateGuardian(guardian, null, res, session.account);
+
+    return successResponse(res, 200, {
+      message: 'Invitation accepted. You are now an active guardian.',
+      ...sessionData,
+      status: 'ACTIVE',
+      // Return the ownerId so the frontend can persist it and auto-load the owner dashboard
+      selectedOwnerId: guardian.userId,
     });
-    if (!guardian) return errorResponse(res, 404, 'Guardian not found');
+  } catch (err) {
+    console.error('[respondToInvite]', err);
+    return errorResponse(res, 500, 'Failed to respond to invitation');
+  }
+}
 
-    const owner = await prisma.user.findUnique({
-      where: { id: decoded.ownerId },
-      select: {
-        fullName: true,
-        email: true,
-        contract: {
-          select: {
-            id: true, status: true, missedCheckinCount: true, guardianQuorum: true,
-            triggerStartedAt: true, lastCheckinAt: true,
-            votes: {
-              include: { guardian: { select: { fullName: true, email: true } } },
+async function getMyInvites(req, res) {
+  try {
+    const token = readGuardianToken(req);
+    if (!token) return errorResponse(res, 401, 'Not authenticated as guardian');
+
+    let session;
+    try {
+      session = await resolveGuardianSession(token);
+    } catch {
+      return errorResponse(res, 401, 'Invalid or expired guardian session');
+    }
+    if (!session) return errorResponse(res, 403, 'Not a guardian');
+
+    const roles = await findGuardiansByEmail(session.email);
+    const myPendingInvites = await enrichInvites(roles.filter(g => g.status === 'INVITED'));
+    const activeRoles = await enrichInvites(roles.filter(g => g.status === 'ACTIVE'));
+
+    return successResponse(res, 200, { myPendingInvites, activeRoles });
+  } catch (err) {
+    console.error('[getMyInvites]', err);
+    return errorResponse(res, 500, 'Failed to fetch invitations');
+  }
+}
+
+async function loadOwnerDashboard(ownerId, guardianRecordId) {
+  const owner = await prisma.user.findUnique({
+    where: { id: ownerId },
+    select: {
+      fullName: true,
+      email: true,
+      phone: true,
+      plan: true,
+      walletAddress: true,
+      guardians: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          phone: true,
+          status: true,
+          acceptedAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      },
+      assets: {
+        where: { isActive: true },
+        select: {
+          id: true,
+          assetName: true,
+          assetType: true,
+          tokenCode: true,
+          estimatedValueUsd: true,
+          releaseDay: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      },
+      beneficiaries: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          status: true,
+          walletAddress: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      },
+      contract: {
+        select: {
+          id: true, status: true, missedCheckinCount: true, guardianQuorum: true,
+          triggerStartedAt: true, lastCheckinAt: true, nextCheckinDue: true,
+          checkinIntervalDays: true, deployedAt: true, executedAt: true,
+          checkIns: {
+            select: {
+              id: true,
+              method: true,
+              checkedInAt: true,
+              transactionHash: true,
+              stellarExplorerUrl: true,
             },
+            orderBy: { checkedInAt: 'desc' },
+            take: 20,
+          },
+          votes: {
+            include: { guardian: { select: { fullName: true, email: true } } },
+            orderBy: { votedAt: 'desc' },
           },
         },
       },
-    });
+    },
+  });
 
-    if (!owner) return errorResponse(res, 404, 'Owner not found');
+  if (!owner) return null;
 
-    const contract = owner.contract;
-    const votes = contract?.votes || [];
-    const myVote = votes.find(v => v.guardianId === guardian.id);
+  // Guard: guardians array may be undefined in SQLite edge cases
+  const ownerGuardians = owner.guardians || [];
+  const ownerAssets = owner.assets || [];
+  const ownerBeneficiaries = owner.beneficiaries || [];
+
+  const guardian = ownerGuardians.find(g => g.id === guardianRecordId)
+    || ownerGuardians.find(g => g.status === 'ACTIVE');
+
+  const contract = owner.contract;
+  const votes = contract?.votes || [];
+  const myVote = guardian ? votes.find(v => v.guardianId === guardian.id) : null;
+  const pendingInvitations = ownerGuardians.filter(g => g.status === 'INVITED');
+  const activeGuardians = ownerGuardians.filter(g => g.status === 'ACTIVE');
+  const decisionPending = Boolean(contract?.status === 'TRIGGERED' && guardian && !myVote);
+  const decisionStatus = contract?.status === 'TRIGGERED'
+    ? (myVote ? 'DECIDED' : 'PENDING')
+    : contract?.status === 'EXECUTING'
+      ? 'QUORUM_REACHED'
+      : 'NOT_REQUESTED';
+
+  const history = [
+    ...ownerGuardians.map(g => ({
+      id: `guardian-${g.id}`,
+      type: g.status === 'ACTIVE' ? 'GUARDIAN_ACCEPTED' : g.status === 'DECLINED' ? 'GUARDIAN_DECLINED' : 'GUARDIAN_INVITED',
+      title: g.status === 'ACTIVE'
+        ? `${g.fullName} accepted guardian role`
+        : g.status === 'DECLINED'
+          ? `${g.fullName} declined guardian role`
+          : `${g.fullName} invited as guardian`,
+      timestamp: g.acceptedAt || g.createdAt,
+      status: g.status,
+    })),
+    ...(contract?.checkIns || []).map(c => ({
+      id: `checkin-${c.id}`,
+      type: 'OWNER_CHECKIN',
+      title: `${owner.fullName} completed a check-in`,
+      timestamp: c.checkedInAt,
+      status: c.method,
+      transactionHash: c.transactionHash,
+      stellarExplorerUrl: c.stellarExplorerUrl,
+    })),
+    ...votes.map(v => ({
+      id: `vote-${v.id}`,
+      type: 'GUARDIAN_DECISION',
+      title: `${v.guardian?.fullName || 'Guardian'} voted ${v.vote}`,
+      timestamp: v.votedAt,
+      status: v.vote,
+    })),
+  ].sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+
+  return {
+    guardian,
+    guardianId: guardian?.id || null,
+    ownerName: owner.fullName,
+    ownerEmail: owner.email,
+    ownerPhone: owner.phone,
+    ownerPlan: owner.plan,
+    ownerWalletAddress: owner.walletAddress,
+    ownerId,
+    contract: contract || null,
+    votes,
+    hasVoted: !!myVote,
+    myVote: myVote || null,
+    guardians: ownerGuardians,
+    activeGuardians,
+    pendingInvitations,
+    assets: ownerAssets,
+    beneficiaries: ownerBeneficiaries,
+    decisionPending,
+    decisionStatus,
+    history,
+  };
+}
+
+async function getGuardianDashboard(req, res) {
+  try {
+    const token = readGuardianToken(req);
+    if (!token) return errorResponse(res, 401, 'Not authenticated as guardian');
+
+    let session;
+    try {
+      session = await resolveGuardianSession(token);
+    } catch {
+      return errorResponse(res, 401, 'Invalid or expired guardian session');
+    }
+    if (!session) return errorResponse(res, 403, 'Not a guardian');
+
+    const roles = await findGuardiansByEmail(session.email);
+    const myPendingInvites = await enrichInvites(roles.filter(g => g.status === 'INVITED'));
+    const activeRoles = await enrichInvites(roles.filter(g => g.status === 'ACTIVE'));
+
+    const requestedOwnerId = req.query.ownerId || session.ownerId;
+    const activeRole = activeRoles.find(r => r.ownerId === requestedOwnerId) || activeRoles[0];
+
+    let dashboard = null;
+    if (activeRole) {
+      dashboard = await loadOwnerDashboard(activeRole.ownerId, activeRole.id);
+    }
+
+    const account = session.account || {
+      email: session.email,
+      fullName: session.legacyGuardian?.fullName || session.email,
+    };
 
     return successResponse(res, 200, {
-      guardianId: guardian.id,
-      ownerName: owner.fullName,
-      ownerEmail: owner.email,
-      contract: contract || null,
-      votes,
-      hasVoted: !!myVote,
-      myVote: myVote || null,
+      account: {
+        id: account.id || session.legacyGuardian?.id,
+        email: session.email,
+        fullName: account.fullName || activeRole?.fullName || session.email,
+      },
+      myPendingInvites,
+      activeRoles,
+      selectedOwnerId: activeRole?.ownerId || null,
+      ...(dashboard || {
+        guardian: activeRole || null,
+        guardianId: activeRole?.id || null,
+        ownerName: null,
+        contract: null,
+        votes: [],
+        hasVoted: false,
+        myVote: null,
+        guardians: [],
+        activeGuardians: [],
+        pendingInvitations: [],
+        assets: [],
+        beneficiaries: [],
+        decisionPending: false,
+        decisionStatus: 'NOT_REQUESTED',
+        history: [],
+      }),
     });
   } catch (err) {
     console.error('[getGuardianDashboard]', err);
@@ -164,10 +646,10 @@ async function getGuardianDashboard(req, res) {
 
 async function castVote(req, res) {
   try {
-    const token = req.cookies.accessToken;
+    const token = readGuardianToken(req);
     if (!token) return errorResponse(res, 401, 'Not authenticated');
-    const decoded = verifyAccessToken(token);
-    if (decoded.role !== 'guardian') return errorResponse(res, 403, 'Not a guardian');
+    const session = await resolveGuardianSession(token);
+    if (!session) return errorResponse(res, 403, 'Not a guardian');
 
     const { contractId } = req.params;
     const { vote, notes } = req.body;
@@ -180,8 +662,9 @@ async function castVote(req, res) {
     });
     if (!contract) return errorResponse(res, 404, 'Contract not found or not in voting state');
 
-    const guardian = await prisma.guardian.findUnique({ where: { id: decoded.userId } });
-    if (!guardian || guardian.userId !== contract.userId) return errorResponse(res, 403, 'Not authorized');
+    const roles = await findGuardiansByEmail(session.email);
+    const guardian = roles.find(g => g.userId === contract.userId && g.status === 'ACTIVE');
+    if (!guardian) return errorResponse(res, 403, 'Not authorized');
 
     const guardianVote = await prisma.guardianVote.upsert({
       where: { contractId_guardianId: { contractId, guardianId: guardian.id } },
@@ -189,11 +672,9 @@ async function castVote(req, res) {
       create: { contractId, guardianId: guardian.id, vote, notes },
     });
 
-    // Emit socket event
     const io = req.app.get('io');
     if (io) io.to(`contract:${contractId}`).emit('vote-update', { guardianId: guardian.id, vote, notes });
 
-    // Notify all guardians of vote update
     const allGuardians = await prisma.guardian.findMany({ where: { userId: contract.userId, status: 'ACTIVE' } });
     const approveCount = contract.votes.filter(v => v.vote === 'APPROVE').length + (vote === 'APPROVE' ? 1 : 0);
     const denyCount = contract.votes.filter(v => v.vote === 'DENY').length + (vote === 'DENY' ? 1 : 0);
@@ -211,7 +692,6 @@ async function castVote(req, res) {
       }
     }
 
-    // Check quorum
     if (approveCount >= contract.guardianQuorum) {
       await prisma.contract.update({ where: { id: contractId }, data: { status: 'EXECUTING' } });
       if (io) io.to(`contract:${contractId}`).emit('quorum-reached', { contractId });
@@ -271,7 +751,7 @@ function guardianInviteTemplate(ownerName, guardianName, token) {
     <p><strong>${ownerName}</strong> has named you as a Guardian on CryptWill.</p>
     <p>As a guardian, you will be asked to confirm if ${ownerName} has passed away. Your vote (along with other guardians) will trigger the inheritance process.</p>
     <a href="${link}" style="display:inline-block; background:#4F6EF7; color:white; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; margin-top:16px;">Accept Guardian Role →</a>
-    <p style="color:#9090A0; font-size:14px; margin-top:24px;">This is a significant responsibility. Please only accept if you personally know ${ownerName}.</p>
+    <p style="color:#9090A0; font-size:14px; margin-top:24px;">Already registered on the Guardian Portal? Log in to accept or decline this invitation from your dashboard.</p>
   </div>`;
 }
 
@@ -280,7 +760,7 @@ function voteUpdateTemplate(name, ownerName, approve, deny, quorum) {
     <h2 style="color:#4F6EF7;">Vote Update</h2>
     <p>Hi ${name}, the guardian vote for ${ownerName}'s estate has been updated.</p>
     <p><strong>${approve} Approve | ${deny} Deny | ${quorum} needed</strong></p>
-    <a href="${process.env.FRONTEND_URL}/guardian/dashboard" style="display:inline-block;background:#4F6EF7;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;">View Dashboard →</a>
+    <a href="${process.env.FRONTEND_URL}/guardian" style="display:inline-block;background:#4F6EF7;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;">View Dashboard →</a>
   </div>`;
 }
 
@@ -294,6 +774,7 @@ function deniedTemplate(name, denierName, notes) {
 }
 
 module.exports = {
-  listGuardians, addGuardian, removeGuardian, acceptGuardianInvite,
-  guardianLogin, getGuardianDashboard, castVote, getVotes,
+  listGuardians, addGuardian, updateGuardian, removeGuardian, acceptGuardianInvite,
+  guardianSignup, guardianLogin, guardianLogout, getGuardianDashboard, castVote, getVotes,
+  respondToInvite, getMyInvites,
 };

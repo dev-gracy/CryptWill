@@ -20,9 +20,12 @@ export default function VerifyOtp() {
   const email = location.state?.email || '';
 
   useEffect(() => {
-    if (!email) { navigate('/signup'); return; }
+    if (!email) {
+      navigate('/signup');
+      return;
+    }
     inputRefs.current[0]?.focus();
-  }, []);
+  }, [email, navigate]);
 
   useEffect(() => {
     if (countdown > 0) {
@@ -62,8 +65,8 @@ export default function VerifyOtp() {
     setIsLoading(true);
     try {
       const res = await api.post('/auth/verify-otp', { email, otp: code });
-      toast.success('Email verified! Welcome to CryptWill 🎉');
-      
+      toast.success('Email verified! Welcome to CryptWill.');
+
       const { user, token } = res.data.data;
       login(user, token);
       if (user.isOnboarded) {
@@ -83,11 +86,11 @@ export default function VerifyOtp() {
   const handleResend = async () => {
     setIsResending(true);
     try {
-      await api.post('/auth/signup', { email, resend: true });
+      await api.post('/auth/resend-otp', { email });
       toast.success('New OTP sent to your email!');
       setCountdown(60);
       setOtp(['', '', '', '', '', '']);
-    } catch (_) {
+    } catch {
       toast.error('Failed to resend OTP');
     } finally {
       setIsResending(false);
@@ -116,7 +119,6 @@ export default function VerifyOtp() {
       </p>
       <p className="font-semibold text-brand text-sm mb-8">{email}</p>
 
-      {/* OTP Input */}
       <div className="flex gap-3 justify-center mb-8" onPaste={handlePaste}>
         {otp.map((digit, index) => (
           <motion.input
@@ -150,7 +152,6 @@ export default function VerifyOtp() {
         <ArrowRight className="w-4 h-4 ml-2" />
       </Button>
 
-      {/* Resend */}
       <div className="text-sm text-text-secondary">
         Didn't receive the code?{' '}
         {countdown > 0 ? (
@@ -166,6 +167,11 @@ export default function VerifyOtp() {
           </button>
         )}
       </div>
+      {import.meta.env.DEV && (
+        <p className="mt-4 text-xs text-text-muted">
+          Dev tip: use OTP <strong className="text-brand">123456</strong> or check the backend console for <code>[OTP-DEBUG]</code>.
+        </p>
+      )}
     </motion.div>
   );
 }

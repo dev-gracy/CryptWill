@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -26,23 +26,23 @@
   }
 
   .dark {
-    /* Dark Theme (Original premium tech feel but softened) */
-    --color-bg: #0A0A0F;
-    --color-bg-secondary: #111118;
-    --color-bg-elevated: #1A1A24;
-    --color-border: #2A2A3A;
+    /* Dark Theme — Mystical deep vault: dark purples + gold accents */
+    --color-bg: #06040f;
+    --color-bg-secondary: #0a0718;
+    --color-bg-elevated: #0f0c1e;
+    --color-border: #1e1836;
     
-    --color-brand: #4F6EF7;
-    --color-brand-hover: #3D5CE5;
-    --color-brand-glow: rgba(79, 110, 247, 0.15);
+    --color-brand: #d4af37;
+    --color-brand-hover: #c9a227;
+    --color-brand-glow: rgba(212,175,55,0.15);
     
-    --color-success: #22C55E;
-    --color-warning: #F59E0B;
-    --color-danger: #EF4444;
+    --color-success: #86c578;
+    --color-warning: #f59e0b;
+    --color-danger: #f87171;
     
-    --color-text-primary: #F0F0F5;
-    --color-text-secondary: #9090A0;
-    --color-text-muted: #606070;
+    --color-text-primary: #f5f0e8;
+    --color-text-secondary: #a09080;
+    --color-text-muted: #605850;
   }
 
   body {
@@ -68,6 +68,16 @@
   }
   
   .glass-panel {
-    @apply bg-bg-secondary/80 backdrop-blur-md border border-border;
+    @apply bg-background-secondary/80 backdrop-blur-md border border-border;
+  }
+
+  /* Keep autofill from flashing light backgrounds in dark mode */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px var(--color-bg-elevated) inset;
+    -webkit-text-fill-color: var(--color-text-primary);
+    caret-color: var(--color-text-primary);
+    transition: background-color 5000s ease-in-out 0s;
   }
 }

@@ -30,12 +30,14 @@ const PLAN_LIMITS = {
   },
 };
 
-function requirePlan(...allowedPlans) {
+const PLAN_RANK = { FREE: 0, PRO: 1, ENTERPRISE: 2 };
+
+function requirePlan(requiredPlan) {
   return (req, res, next) => {
-    if (!allowedPlans.includes(req.user.plan)) {
-      return errorResponse(res, 403, `This feature requires one of: ${allowedPlans.join(', ')} plan`);
-    }
-    next();
+    const userRank = PLAN_RANK[req.user.plan] ?? 0;
+    const requiredRank = PLAN_RANK[requiredPlan] ?? 99;
+    if (userRank >= requiredRank) return next();
+    return errorResponse(res, 403, `This feature requires the ${requiredPlan} plan`);
   };
 }
 

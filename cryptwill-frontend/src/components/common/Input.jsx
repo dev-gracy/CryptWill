@@ -12,7 +12,7 @@ const Input = React.forwardRef(({ className, label, error, helperText, ...props 
       <input
         ref={ref}
         className={cn(
-          "flex h-11 w-full rounded-lg border border-border bg-bg-elevated px-4 py-2 text-sm text-text-primary transition-colors",
+          "flex h-11 w-full rounded-lg border border-border bg-background-elevated px-4 py-2 text-sm text-text-primary transition-colors",
           "focus:outline-none focus:ring-2 focus:ring-brand/50 focus:border-brand",
           "placeholder:text-text-muted",
           "disabled:cursor-not-allowed disabled:opacity-50",

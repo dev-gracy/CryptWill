@@ -7,6 +7,7 @@ router.post('/webhook', subscriptionController.handleWebhook);
 
 router.use(protect);
 router.post('/create', subscriptionController.createSubscription);
+router.post('/verify', subscriptionController.verifyPayment);
 router.get('/status', subscriptionController.getSubscriptionStatus);
 
 module.exports = router;
