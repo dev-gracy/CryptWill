@@ -42,67 +42,67 @@ export function MainLayout({ role = 'OWNER' }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  /* Sidebar theme tokens — light uses warm earth tones, dark uses deep purple+gold */
+  /* Sidebar theme tokens — aligned to the rose-gold vault palette */
   const ST = isDark ? {
-    pageBg:      '#06040f',
-    sidebarBg:   'linear-gradient(180deg,#080614 0%,#0d0920 50%,#080614 100%)',
-    sidebarBdr:  'rgba(212,175,55,0.18)',
-    logoBg:      'linear-gradient(135deg,rgba(212,175,55,0.2),rgba(168,85,247,0.15))',
-    logoBdr:     'rgba(212,175,55,0.35)',
-    logoShadow:  '0 0 16px rgba(212,175,55,0.15)',
-    logoIconClr: '#d4af37',
-    logoText:    'linear-gradient(135deg,#d4af37,#f5e6a3)',
-    divClr:      'rgba(212,175,55,0.15)',
-    navActive:   'linear-gradient(135deg,rgba(212,175,55,0.12),rgba(168,85,247,0.08))',
-    navActiveBdr:'rgba(212,175,55,0.25)',
-    navActiveClr:'#d4af37',
-    navInactiveClr:'rgba(200,180,150,0.6)',
-    navIndicator:'#d4af37',
-    avatarBg:    'rgba(212,175,55,0.12)',
-    avatarBdr:   'rgba(212,175,55,0.25)',
-    avatarClr:   '#d4af37',
-    userNameClr: '#f5f0e8',
-    userEmailClr:'rgba(200,180,150,0.5)',
-    logoutClr:   'rgba(200,180,150,0.55)',
-    headerBg:    'rgba(8,6,20,0.85)',
-    headerBdr:   'rgba(212,175,55,0.15)',
-    closeBtnClr: 'rgba(212,175,55,0.6)',
-    badgePlanBg: 'rgba(212,175,55,0.08)',
-    badgePlanBdr:'rgba(212,175,55,0.22)',
-    badgePlanClr:'#d4af37',
-    checkinBg:   'rgba(134,197,120,0.08)',
-    checkinBdr:  'rgba(134,197,120,0.25)',
-    checkinClr:  '#86c578',
+    pageBg:      'var(--color-bg)',
+    sidebarBg:   'linear-gradient(180deg,#0b1326 0%,#101d36 55%,#0b1326 100%)',
+    sidebarBdr:  'rgba(198,143,130,0.16)',
+    logoBg:      'linear-gradient(135deg,rgba(198,143,130,0.18),rgba(255,255,255,0.06))',
+    logoBdr:     'rgba(198,143,130,0.24)',
+    logoShadow:  '0 0 16px rgba(198,143,130,0.18)',
+    logoIconClr: 'var(--color-brand)',
+    logoText:    'linear-gradient(135deg,var(--color-brand),rgba(245,224,216,0.85))',
+    divClr:      'rgba(255,255,255,0.08)',
+    navActive:   'linear-gradient(135deg,rgba(198,143,130,0.12),rgba(145,96,97,0.08))',
+    navActiveBdr:'rgba(198,143,130,0.25)',
+    navActiveClr:'var(--color-brand)',
+    navInactiveClr:'rgba(244,234,223,0.78)',
+    navIndicator:'var(--color-brand)',
+    avatarBg:    'rgba(198,143,130,0.12)',
+    avatarBdr:   'rgba(198,143,130,0.25)',
+    avatarClr:   'var(--color-brand)',
+    userNameClr: 'var(--color-text-primary)',
+    userEmailClr:'var(--color-text-secondary)',
+    logoutClr:   'rgba(200,180,150,0.65)',
+    headerBg:    'rgba(16,26,54,0.85)',
+    headerBdr:   'rgba(198,143,130,0.12)',
+    closeBtnClr: 'rgba(198,143,130,0.65)',
+    badgePlanBg: 'rgba(198,143,130,0.1)',
+    badgePlanBdr:'rgba(198,143,130,0.22)',
+    badgePlanClr:'var(--color-brand)',
+    checkinBg:   'rgba(143,190,155,0.1)',
+    checkinBdr:  'rgba(143,190,155,0.3)',
+    checkinClr:  'var(--color-success)',
   } : {
-    pageBg:      '#fdfbf7',
-    sidebarBg:   'linear-gradient(180deg,#fdfaf5 0%,#f5ece0 50%,#fdfaf5 100%)',
-    sidebarBdr:  'rgba(140,106,79,0.18)',
-    logoBg:      'linear-gradient(135deg,rgba(140,106,79,0.15),rgba(200,149,107,0.1))',
-    logoBdr:     'rgba(140,106,79,0.3)',
-    logoShadow:  '0 0 16px rgba(140,106,79,0.1)',
-    logoIconClr: '#8C6A4F',
-    logoText:    'linear-gradient(135deg,#8C6A4F,#c8956b)',
-    divClr:      'rgba(140,106,79,0.15)',
-    navActive:   'linear-gradient(135deg,rgba(140,106,79,0.12),rgba(200,149,107,0.08))',
-    navActiveBdr:'rgba(140,106,79,0.28)',
-    navActiveClr:'#8C6A4F',
-    navInactiveClr:'rgba(80,60,45,0.6)',
-    navIndicator:'#8C6A4F',
-    avatarBg:    'rgba(140,106,79,0.1)',
-    avatarBdr:   'rgba(140,106,79,0.25)',
-    avatarClr:   '#8C6A4F',
-    userNameClr: '#3B332C',
-    userEmailClr:'rgba(80,60,45,0.5)',
-    logoutClr:   'rgba(80,60,45,0.55)',
-    headerBg:    'rgba(253,251,247,0.88)',
-    headerBdr:   'rgba(140,106,79,0.15)',
-    closeBtnClr: 'rgba(140,106,79,0.6)',
-    badgePlanBg: 'rgba(140,106,79,0.08)',
-    badgePlanBdr:'rgba(140,106,79,0.22)',
-    badgePlanClr:'#8C6A4F',
-    checkinBg:   'rgba(93,122,97,0.07)',
-    checkinBdr:  'rgba(93,122,97,0.25)',
-    checkinClr:  '#5D7A61',
+    pageBg:      'var(--color-bg)',
+    sidebarBg:   'linear-gradient(180deg,#f7ede7 0%,#efdfd8 50%,#f7ede7 100%)',
+    sidebarBdr:  'rgba(198,143,130,0.16)',
+    logoBg:      'linear-gradient(135deg,rgba(198,143,130,0.16),rgba(255,255,255,0.8))',
+    logoBdr:     'rgba(198,143,130,0.24)',
+    logoShadow:  '0 0 16px rgba(198,143,130,0.14)',
+    logoIconClr: 'var(--color-brand)',
+    logoText:    'linear-gradient(135deg,var(--color-brand),rgba(245,224,216,0.9))',
+    divClr:      'rgba(198,143,130,0.2)',
+    navActive:   'linear-gradient(135deg,rgba(198,143,130,0.12),rgba(198,143,130,0.08))',
+    navActiveBdr:'rgba(198,143,130,0.25)',
+    navActiveClr:'var(--color-brand)',
+    navInactiveClr:'rgba(44,36,28,0.62)',
+    navIndicator:'var(--color-brand)',
+    avatarBg:    'rgba(198,143,130,0.12)',
+    avatarBdr:   'rgba(198,143,130,0.28)',
+    avatarClr:   'var(--color-brand)',
+    userNameClr: 'var(--color-text-primary)',
+    userEmailClr:'rgba(44,36,28,0.55)',
+    logoutClr:   'rgba(44,36,28,0.65)',
+    headerBg:    'rgba(255,255,255,0.9)',
+    headerBdr:   'rgba(198,143,130,0.18)',
+    closeBtnClr: 'rgba(198,143,130,0.65)',
+    badgePlanBg: 'rgba(198,143,130,0.1)',
+    badgePlanBdr:'rgba(198,143,130,0.22)',
+    badgePlanClr:'var(--color-brand)',
+    checkinBg:   'rgba(143,190,155,0.1)',
+    checkinBdr:  'rgba(143,190,155,0.3)',
+    checkinClr:  'var(--color-success)',
   };
 
   const navItems = role === 'BENEFICIARY'
@@ -161,7 +161,7 @@ export function MainLayout({ role = 'OWNER' }) {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ background: ST.pageBg, transition:'background .3s' }}>
+    <div className="min-h-screen h-screen flex overflow-hidden" style={{ background: ST.pageBg, transition:'background .3s' }}>
       {/* Mobile overlay */}
       <AnimatePresence>
         {sidebarOpen && (
@@ -179,7 +179,7 @@ export function MainLayout({ role = 'OWNER' }) {
       <motion.aside
         className={`fixed left-0 top-0 h-full z-50 flex flex-col border-r transition-all duration-300
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-          lg:translate-x-0 lg:relative lg:z-auto w-64`}
+          lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen lg:z-auto w-64`}
         style={{ background: ST.sidebarBg, borderColor: ST.sidebarBdr }}
         initial={false}
       >
@@ -191,7 +191,7 @@ export function MainLayout({ role = 'OWNER' }) {
               <Shield className="w-5 h-5" style={{ color: ST.logoIconClr }} />
             </div>
             <span className="font-bold text-lg"
-              style={{ fontFamily: 'Georgia, serif', background: ST.logoText, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              style={{ fontFamily: 'Inter, sans-serif', background: ST.logoText, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               CryptWill
             </span>
           </NavLink>
@@ -277,7 +277,7 @@ export function MainLayout({ role = 'OWNER' }) {
       </motion.aside>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
         <header className="h-16 border-b sticky top-0 z-30 flex items-center gap-4 px-6"
           style={{ background: ST.headerBg, backdropFilter: 'blur(20px)', borderColor: ST.headerBdr }}>
@@ -344,7 +344,7 @@ export function MainLayout({ role = 'OWNER' }) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-6 overflow-auto min-h-0">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}

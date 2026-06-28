@@ -25,51 +25,51 @@ export default function AuthLayout() {
   const isDark = theme === "dark";
 
   const vars = isDark ? {
-    "--auth-left-bg": "linear-gradient(180deg,#080614 0%,#0d0920 55%,#080614 100%)",
-    "--auth-border": "rgba(212,175,55,0.18)",
+    "--auth-left-bg": "linear-gradient(180deg,#091225 0%,#101d36 55%,#081026 100%)",
+    "--auth-border": "rgba(198,143,130,0.14)",
     "--auth-card-bg": "rgba(10,7,22,0.82)",
     "--auth-card-shadow": "0 24px 80px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.03)",
-    "--auth-title-color": "#d4af37",
-    "--auth-title-from": "#d4af37",
-    "--auth-title-to": "#f5e6a3",
-    "--auth-icon-bg": "rgba(212,175,55,0.12)",
-    "--auth-icon-border": "rgba(212,175,55,0.28)",
-    "--auth-icon-color": "#d4af37",
-    "--auth-orb1": "rgba(147,51,234,.22)",
-    "--auth-orb2": "rgba(212,175,55,.14)",
+    "--auth-title-color": "var(--color-brand)",
+    "--auth-title-from": "var(--color-brand)",
+    "--auth-title-to": "rgba(244,231,229,0.72)",
+    "--auth-icon-bg": "rgba(198,143,130,0.12)",
+    "--auth-icon-border": "rgba(198,143,130,0.26)",
+    "--auth-icon-color": "var(--color-brand)",
+    "--auth-orb1": "rgba(198,143,130,.16)",
+    "--auth-orb2": "rgba(198,143,130,.08)",
     "--auth-orb3": "rgba(244,143,177,.08)",
-    "--auth-text-body": "rgba(200,180,150,.65)",
-    "--auth-ring-bg": "linear-gradient(135deg,rgba(212,175,55,.12),rgba(168,85,247,.08))",
-    "--auth-ring-border": "rgba(212,175,55,.25)",
-    "--auth-petal1": "#a855f7",
-    "--auth-petal2": "#d4af37",
-    "--auth-petal3": "#f48fb1",
-    "--auth-petal4": "#a855f7",
-    "--auth-copy": "rgba(200,180,150,.35)",
-    "--auth-bg-page": "#06040f",
+    "--auth-text-body": "rgba(244,231,229,.72)",
+    "--auth-ring-bg": "linear-gradient(135deg,rgba(198,143,130,.12),rgba(255,255,255,.06))",
+    "--auth-ring-border": "rgba(198,143,130,.22)",
+    "--auth-petal1": "rgba(198,143,130,.95)",
+    "--auth-petal2": "var(--color-brand)",
+    "--auth-petal3": "rgba(244,143,177,.7)",
+    "--auth-petal4": "rgba(198,143,130,.6)",
+    "--auth-copy": "rgba(244,231,229,.45)",
+    "--auth-bg-page": "var(--color-bg)",
   } : {
-    "--auth-left-bg": "linear-gradient(180deg,#fdfaf5 0%,#f8f0e3 55%,#fdfaf5 100%)",
-    "--auth-border": "rgba(140,106,79,0.18)",
-    "--auth-card-bg": "rgba(255,252,248,0.92)",
-    "--auth-card-shadow": "0 24px 80px rgba(140,106,79,.12), inset 0 1px 0 rgba(255,255,255,.9)",
-    "--auth-title-color": "#8C6A4F",
-    "--auth-title-from": "#8C6A4F",
-    "--auth-title-to": "#c8956b",
-    "--auth-icon-bg": "rgba(140,106,79,0.1)",
-    "--auth-icon-border": "rgba(140,106,79,0.22)",
-    "--auth-icon-color": "#8C6A4F",
-    "--auth-orb1": "rgba(140,106,79,.12)",
-    "--auth-orb2": "rgba(200,160,100,.1)",
-    "--auth-orb3": "rgba(180,140,200,.07)",
-    "--auth-text-body": "rgba(80,60,45,.65)",
-    "--auth-ring-bg": "linear-gradient(135deg,rgba(140,106,79,.1),rgba(200,149,107,.08))",
-    "--auth-ring-border": "rgba(140,106,79,.22)",
-    "--auth-petal1": "#c8956b",
-    "--auth-petal2": "#8C6A4F",
-    "--auth-petal3": "#d4a066",
-    "--auth-petal4": "#b07a50",
-    "--auth-copy": "rgba(80,60,45,.4)",
-    "--auth-bg-page": "#fdfbf7",
+    "--auth-left-bg": "linear-gradient(180deg,#f7f0ec 0%,#eee2de 55%,#f7f0ec 100%)",
+    "--auth-border": "rgba(198,143,130,0.14)",
+    "--auth-card-bg": "rgba(255,255,255,0.96)",
+    "--auth-card-shadow": "0 24px 80px rgba(60,42,20,.12), inset 0 1px 0 rgba(255,255,255,.9)",
+    "--auth-title-color": "var(--color-brand)",
+    "--auth-title-from": "var(--color-brand)",
+    "--auth-title-to": "rgba(244,231,229,.95)",
+    "--auth-icon-bg": "rgba(198,143,130,0.14)",
+    "--auth-icon-border": "rgba(198,143,130,0.26)",
+    "--auth-icon-color": "var(--color-brand)",
+    "--auth-orb1": "rgba(198,143,130,.16)",
+    "--auth-orb2": "rgba(244,143,177,.08)",
+    "--auth-orb3": "rgba(198,143,130,.08)",
+    "--auth-text-body": "rgba(58,50,50,.72)",
+    "--auth-ring-bg": "linear-gradient(135deg,rgba(198,143,130,.14),rgba(255,255,255,.1))",
+    "--auth-ring-border": "rgba(198,143,130,.28)",
+    "--auth-petal1": "rgba(198,143,130,.95)",
+    "--auth-petal2": "var(--color-brand)",
+    "--auth-petal3": "rgba(244,143,177,.7)",
+    "--auth-petal4": "rgba(198,143,130,.65)",
+    "--auth-copy": "rgba(58,50,50,.42)",
+    "--auth-bg-page": "#F7F0ED",
   };
 
   return (
@@ -92,14 +92,14 @@ export default function AuthLayout() {
             <div style={{ width:42, height:42, borderRadius:12, background:vars["--auth-icon-bg"], border:`1px solid ${vars["--auth-icon-border"]}`, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:`0 0 20px ${vars["--auth-icon-bg"]}` }}>
               <Shield style={{ width:20, height:20, color:vars["--auth-icon-color"] }} />
             </div>
-            <span style={{ fontSize:"1.2rem", fontWeight:700, fontFamily:"Georgia,serif", background:`linear-gradient(135deg,${vars["--auth-title-from"]},${vars["--auth-title-to"]})`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
+            <span style={{ fontSize:"1.2rem", fontWeight:700, fontFamily:"Inter, sans-serif", background:`linear-gradient(135deg,${vars["--auth-title-from"]},${vars["--auth-title-to"]})`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
               CryptWill
             </span>
           </Link>
 
           <div style={{ flex:1, display:"flex", flexDirection:"column", justifyContent:"center" }}>
             <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:.6 }}>
-              <h1 style={{ fontSize:"2.2rem", fontWeight:700, fontFamily:"Georgia,serif", lineHeight:1.25, marginBottom:16, color:"var(--color-text-primary)" }}>
+              <h1 style={{ fontSize:"2.2rem", fontWeight:700, fontFamily:"Inter, sans-serif", lineHeight:1.25, marginBottom:16, color:"var(--color-text-primary)" }}>
                 Your crypto.<br />Your legacy.<br />
                 <span style={{ background:`linear-gradient(135deg,${vars["--auth-title-from"]},${vars["--auth-title-to"]})`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", animation:"shimG 3s ease-in-out infinite" }}>
                   Your rules.
@@ -149,7 +149,7 @@ export default function AuthLayout() {
             <div style={{ width:32, height:32, borderRadius:9, background:vars["--auth-icon-bg"], border:`1px solid ${vars["--auth-icon-border"]}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
               <Shield style={{ width:16, height:16, color:vars["--auth-icon-color"] }} />
             </div>
-            <span style={{ fontWeight:700, fontFamily:"Georgia,serif", background:`linear-gradient(135deg,${vars["--auth-title-from"]},${vars["--auth-title-to"]})`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>CryptWill</span>
+            <span style={{ fontWeight:700, fontFamily:"Inter, sans-serif", background:`linear-gradient(135deg,${vars["--auth-title-from"]},${vars["--auth-title-to"]})`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>CryptWill</span>
           </Link>
           <div style={{ marginLeft:"auto" }}>
             <ThemeToggle />

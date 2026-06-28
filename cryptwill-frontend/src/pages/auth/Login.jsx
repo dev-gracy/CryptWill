@@ -19,50 +19,50 @@ export default function Login() {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
 
   const T = isDark ? {
-    title:    "linear-gradient(135deg,#d4af37,#f5e6a3,#c8956b)",
-    sub:      "rgba(200,180,150,.55)",
-    label:    "rgba(200,180,150,.6)",
-    inputBg:  "rgba(6,4,15,.7)",
-    inputBdr: "rgba(212,175,55,.22)",
-    inputFoc: "rgba(212,175,55,.5)",
-    inputClr: "#f5f0e8",
-    inputPh:  "rgba(200,180,150,.35)",
-    iconClr:  (f) => f ? "#d4af37" : "rgba(200,180,150,.4)",
-    btnBg:    "linear-gradient(135deg,#c9a227,#8b5e3c)",
-    btnClr:   "#06040f",
-    btnShadow:"0 4px 24px rgba(201,162,39,.35)",
-    btnHover: "0 8px 32px rgba(201,162,39,.5)",
-    link:     "#d4af37",
-    linkHov:  "#f5e6a3",
-    forgotC:  "rgba(212,175,55,.65)",
-    forgotH:  "#d4af37",
-    hintBg:   "rgba(212,175,55,.06)",
-    hintBdr:  "rgba(212,175,55,.15)",
-    hintClr:  "rgba(200,180,150,.45)",
-    errClr:   "#f87171",
+    title:    "linear-gradient(135deg,var(--color-brand),rgba(244,231,229,.92))",
+    sub:      "rgba(244,231,229,.72)",
+    label:    "rgba(244,231,229,.78)",
+    inputBg:  "rgba(10,8,20,.72)",
+    inputBdr: "rgba(198,143,130,.22)",
+    inputFoc: "rgba(198,143,130,.45)",
+    inputClr: "#F4E9E7",
+    inputPh:  "rgba(244,231,229,.5)",
+    iconClr:  (f) => f ? "var(--color-brand)" : "rgba(244,231,229,.5)",
+    btnBg:    "linear-gradient(135deg,var(--color-brand),rgba(198,143,130,.95))",
+    btnClr:   "var(--color-bg)",
+    btnShadow:"0 4px 24px rgba(198,143,130,.28)",
+    btnHover: "0 8px 32px rgba(198,143,130,.45)",
+    link:     "var(--color-brand)",
+    linkHov:  "var(--color-brand-hover)",
+    forgotC:  "rgba(198,143,130,.75)",
+    forgotH:  "var(--color-brand)",
+    hintBg:   "rgba(198,143,130,.08)",
+    hintBdr:  "rgba(198,143,130,.18)",
+    hintClr:  "rgba(244,231,229,.8)",
+    errClr:   "#F28888",
     spinBdr:  "rgba(6,4,15,.3)",
-    spinTop:  "#06040f",
+    spinTop:  "var(--color-bg)",
   } : {
-    title:    "linear-gradient(135deg,#8C6A4F,#c8956b)",
-    sub:      "rgba(80,60,45,.6)",
-    label:    "rgba(80,60,45,.65)",
-    inputBg:  "rgba(255,252,248,.9)",
-    inputBdr: "rgba(140,106,79,.25)",
-    inputFoc: "rgba(140,106,79,.5)",
-    inputClr: "#3B332C",
-    inputPh:  "rgba(140,106,79,.4)",
-    iconClr:  (f) => f ? "#8C6A4F" : "rgba(140,106,79,.5)",
-    btnBg:    "linear-gradient(135deg,#8C6A4F,#73553C)",
+    title:    "linear-gradient(135deg,var(--color-brand),rgba(244,231,229,.95))",
+    sub:      "rgba(89,70,74,.62)",
+    label:    "rgba(89,70,74,.72)",
+    inputBg:  "rgba(255,250,248,.95)",
+    inputBdr: "rgba(198,143,130,.22)",
+    inputFoc: "rgba(198,143,130,.4)",
+    inputClr: "#3A3232",
+    inputPh:  "rgba(89,70,74,.45)",
+    iconClr:  (f) => f ? "var(--color-brand)" : "rgba(89,70,74,.5)",
+    btnBg:    "linear-gradient(135deg,var(--color-brand-hover),var(--color-brand))",
     btnClr:   "#fff",
-    btnShadow:"0 4px 24px rgba(140,106,79,.3)",
-    btnHover: "0 8px 32px rgba(140,106,79,.45)",
-    link:     "#8C6A4F",
-    linkHov:  "#73553C",
-    forgotC:  "rgba(140,106,79,.7)",
-    forgotH:  "#8C6A4F",
-    hintBg:   "rgba(140,106,79,.05)",
-    hintBdr:  "rgba(140,106,79,.15)",
-    hintClr:  "rgba(80,60,45,.45)",
+    btnShadow:"0 4px 24px rgba(198,143,130,.28)",
+    btnHover: "0 8px 32px rgba(198,143,130,.45)",
+    link:     "var(--color-brand)",
+    linkHov:  "var(--color-brand-hover)",
+    forgotC:  "rgba(198,143,130,.7)",
+    forgotH:  "var(--color-brand)",
+    hintBg:   "rgba(198,143,130,.08)",
+    hintBdr:  "rgba(198,143,130,.15)",
+    hintClr:  "rgba(89,70,74,.55)",
     errClr:   "#B55A5A",
     spinBdr:  "rgba(255,255,255,.3)",
     spinTop:  "#fff",
@@ -72,7 +72,7 @@ export default function Login() {
     @keyframes spin{to{transform:rotate(360deg)}}
     .ai{width:100%;border-radius:12px;border:1px solid ${T.inputBdr};background:${T.inputBg};padding:12px 16px 12px 42px;font-size:.88rem;color:${T.inputClr};outline:none;transition:all .2s;box-sizing:border-box;font-family:inherit}
     .ai::placeholder{color:${T.inputPh}}
-    .ai:focus{border-color:${T.inputFoc};box-shadow:0 0 0 4px ${isDark?"rgba(212,175,55,.07)":"rgba(140,106,79,.07)"}}
+    .ai:focus{border-color:${T.inputFoc};box-shadow:0 0 0 4px rgba(198,143,130,.07)}
     .ai.err{border-color:${T.errClr}}
     .ab{width:100%;border-radius:12px;padding:13px 20px;font-weight:700;font-size:.9rem;cursor:pointer;background:${T.btnBg};border:none;color:${T.btnClr};box-shadow:${T.btnShadow};display:flex;align-items:center;justify-content:center;gap:8px;transition:all .25s;letter-spacing:.02em}
     .ab:hover{transform:translateY(-2px);box-shadow:${T.btnHover}}
@@ -101,7 +101,7 @@ export default function Login() {
       <style>{inputCss}</style>
 
       <div style={{ textAlign:"center", marginBottom:28 }}>
-        <h2 style={{ fontSize:"1.5rem", fontWeight:700, fontFamily:"Georgia,serif", background:T.title, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", margin:"0 0 8px" }}>
+        <h2 style={{ fontSize:"1.5rem", fontWeight:700, fontFamily:"Inter, sans-serif", background:T.title, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", margin:"0 0 8px" }}>
           Welcome back
         </h2>
         <p style={{ fontSize:".83rem", color:T.sub }}>Sign in to manage your crypto inheritance plan</p>

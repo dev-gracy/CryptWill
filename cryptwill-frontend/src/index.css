@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,47 +6,63 @@
 
 @layer base {
   :root {
-    /* Light Theme (Nature/Peaceful Creme/Brown tones) */
-    --color-bg: #FDFBF7;
-    --color-bg-secondary: #F5EFE6;
-    --color-bg-elevated: #FFFFFF;
-    --color-border: #E8DFD5;
-    
-    --color-brand: #8C6A4F; /* Earthy brown */
-    --color-brand-hover: #73553C;
-    --color-brand-glow: rgba(140, 106, 79, 0.15);
-    
-    --color-success: #5D7A61; /* Sage green */
-    --color-warning: #D99A4E;
-    --color-danger: #B55A5A; /* Soft red/terracotta */
-    
-    --color-text-primary: #3B332C;
-    --color-text-secondary: #6A6056;
-    --color-text-muted: #9E9389;
+    /* Light Theme — soft rose-gold vault palette */
+    --color-bg: #f6f1eb;
+    --color-bg-secondary: #ece3d8;
+    --color-bg-elevated: #ffffff;
+    --color-border: #d9bfaf;
+
+    --color-brand: #8d6453; /* rich terracotta accent */
+    --color-brand-hover: #755244;
+    --color-brand-glow: rgba(141, 100, 83, 0.18);
+
+    --color-success: #5f816f; /* muted sage */
+    --color-warning: #b28b62;
+    --color-danger: #a34f4d;
+
+    --color-text-primary: #2d2521;
+    --color-text-secondary: #6d5d55;
+    --color-text-muted: #8b7c75;
+
+    --color-shadow: rgba(72, 56, 58, 0.08);
   }
 
   .dark {
-    /* Dark Theme — Mystical deep vault: dark purples + gold accents */
-    --color-bg: #06040f;
-    --color-bg-secondary: #0a0718;
-    --color-bg-elevated: #0f0c1e;
-    --color-border: #1e1836;
+    /* Dark Theme — Elegant vault with rose-gold accents and deeper charcoal contrast */
+    --color-bg: #0b162b;
+    --color-bg-secondary: #12243b;
+    --color-bg-elevated: #1d3154;
+    --color-border: #203855;
     
-    --color-brand: #d4af37;
-    --color-brand-hover: #c9a227;
-    --color-brand-glow: rgba(212,175,55,0.15);
+    --color-brand: #bfa38e;
+    --color-brand-hover: #a87b67;
+    --color-brand-glow: rgba(191,163,142,0.2);
     
-    --color-success: #86c578;
-    --color-warning: #f59e0b;
-    --color-danger: #f87171;
+    --color-success: #8bb08d;
+    --color-warning: #d4a16e;
+    --color-danger: #e37b76;
     
-    --color-text-primary: #f5f0e8;
-    --color-text-secondary: #a09080;
-    --color-text-muted: #605850;
+    --color-text-primary: #ece5de;
+    --color-text-secondary: #c9b8ae;
+    --color-text-muted: #9f8d85;
   }
 
   body {
     @apply bg-background text-text-primary font-sans antialiased transition-colors duration-300;
+  }
+
+  h1, h2, h3, h4, h5, h6,
+  .font-serif,
+  .heading,
+  .title {
+    font-family: 'Playfair Display', Georgia, serif !important;
+    letter-spacing: 0.01em;
+  }
+
+  .btn-hero,
+  .btn-primary,
+  .btn-secondary {
+    letter-spacing: 0.02em;
   }
 
   /* Custom scrollbar */

@@ -302,7 +302,7 @@ function SubscriptionTab({ user }) {
       features: ['4 beneficiaries', '5 guardians', '30-day check-in', '500MB vault', 'Email notifications']
     },
     {
-      id: 'PRO', name: 'Pro', price: '₹999', period: '/month',
+      id: 'PRO', name: 'Pro', price: '₹1,499', period: '/month',
       features: ['10 beneficiaries', '7 guardians', 'Custom intervals', '5GB vault', 'SMS alerts', 'PDF will export', 'Priority support'],
       highlight: true
     },

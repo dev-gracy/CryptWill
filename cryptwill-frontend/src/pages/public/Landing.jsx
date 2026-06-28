@@ -6,6 +6,7 @@ import {
   Star, Globe, Code2, Clock, Key, Vault, ChevronDown
 } from 'lucide-react';
 import ThemeToggle from '../../components/common/ThemeToggle';
+import HeroPortal from '../../components/landing/HeroPortal';
 
 function AnimatedGradientOrb({ className }) {
   return (
@@ -86,11 +87,12 @@ export default function Landing() {
             <div className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center shadow-md shadow-brand/30">
               <Shield className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold text-text-primary">CryptWill</span>
+            <span className="font-bold text-text-primary font-serif">CryptWill</span>
           </div>
           <div className="hidden md:flex items-center gap-6 text-sm text-text-secondary">
             <a href="#features" className="hover:text-text-primary transition-colors">Features</a>
             <a href="#how" className="hover:text-text-primary transition-colors">How it works</a>
+            <a href="#security" className="hover:text-text-primary transition-colors">Security</a>
             <a href="#plans" className="hover:text-text-primary transition-colors">Pricing</a>
           </div>
           <div className="flex items-center gap-3">
@@ -107,19 +109,20 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
+      <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden bg-slate-950/10">
         {/* Background orbs */}
         <AnimatedGradientOrb className="w-96 h-96 bg-brand -top-10 -left-10" />
-        <AnimatedGradientOrb className="w-80 h-80 bg-purple-500 top-1/2 -right-20" />
-        <AnimatedGradientOrb className="w-64 h-64 bg-brand bottom-10 left-1/3" />
+        <AnimatedGradientOrb className="w-80 h-80 bg-brand/40 top-1/2 -right-20" />
+        <AnimatedGradientOrb className="w-64 h-64 bg-brand/30 bottom-10 left-1/3" />
 
         {/* Grid pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(79,110,247,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(79,110,247,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(155,94,79,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(155,94,79,0.05)_1px,transparent_1px)] bg-[size:50px_50px]" />
 
         <motion.div
           style={{ y: heroY, opacity: heroOpacity }}
-          className="relative z-10 text-center max-w-4xl mx-auto px-6"
+          className="relative z-10 max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center"
         >
+          <div className="text-center lg:text-left">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -135,7 +138,7 @@ export default function Landing() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.7 }}
-            className="text-5xl md:text-7xl font-bold text-text-primary leading-tight mb-6"
+            className="text-5xl md:text-6xl font-bold font-serif text-white leading-tight mb-6"
           >
             Your crypto.<br />
             <span className="text-brand relative">
@@ -155,18 +158,25 @@ export default function Landing() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto mb-10 leading-relaxed"
+            className="text-lg md:text-xl text-slate-200 max-w-xl mx-auto lg:mx-0 mb-10 leading-relaxed"
           >
-            CryptWill is a decentralized digital inheritance platform. 
-            Register your assets, appoint guardians, and let a Soroban smart contract 
-            handle everything automatically — no lawyers, no intermediaries, no trust required.
+            CryptWill is a decentralized digital inheritance platform designed to feel like a calm, heavenly vault.
+            Your crypto legacy is protected behind a serene gate of light, flowers, and secure smart contracts.
+          </motion.p>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="text-sm text-slate-300 max-w-xl mx-auto lg:mx-0 mb-10 leading-relaxed"
+          >
+            Works beautifully in both light and dark mode, reflecting safe wealth, peace, and trust through every step.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.45, duration: 0.5 }}
-            className="flex flex-col sm:flex-row gap-3 justify-center"
+            className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start"
           >
             <Link
               to="/signup"
@@ -188,7 +198,7 @@ export default function Landing() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
-            className="flex flex-wrap items-center justify-center gap-6 mt-12 text-sm text-text-muted"
+            className="flex flex-wrap items-center justify-center lg:justify-start gap-6 mt-12 text-sm text-slate-300"
           >
             {['AES-256 Encrypted', 'No Intermediaries', 'Stellar Testnet', 'Open Source'].map(badge => (
               <div key={badge} className="flex items-center gap-2">
@@ -196,6 +206,17 @@ export default function Landing() {
                 {badge}
               </div>
             ))}
+          </motion.div>
+          </div>
+
+          {/* Portal illustration */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.8 }}
+            className="hidden lg:block"
+          >
+            <HeroPortal />
           </motion.div>
         </motion.div>
 
@@ -224,7 +245,7 @@ export default function Landing() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-3xl md:text-4xl font-bold text-text-primary mb-4"
+            className="text-3xl md:text-4xl font-bold font-serif text-text-primary mb-4"
           >
             Everything your crypto estate needs
           </motion.h2>
@@ -245,12 +266,72 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Security */}
+      <section id="security" className="py-24 max-w-6xl mx-auto px-6">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <p className="text-brand font-semibold text-sm mb-3 uppercase tracking-wide">Security</p>
+            <h2 className="text-3xl md:text-4xl font-bold font-serif text-text-primary mb-4">
+              Built so that even we can't see your secrets
+            </h2>
+            <p className="text-text-secondary text-lg leading-relaxed mb-8">
+              Every seed phrase, document, and key is encrypted before it ever leaves your browser.
+              CryptWill is non-custodial by design — your assets stay yours until your smart contract
+              says otherwise.
+            </p>
+            <div className="space-y-4">
+              {[
+                { icon: Lock, title: 'AES-256 client-side encryption', desc: 'Files are encrypted on your device. We only ever store ciphertext.' },
+                { icon: Key, title: 'Shamir\'s Secret Sharing', desc: 'Recovery keys are split into shards — no single guardian or server holds the whole secret.' },
+                { icon: Shield, title: 'Audited smart contracts', desc: 'Soroban contracts on Stellar enforce your rules exactly as written, with no manual override.' },
+              ].map((item) => (
+                <div key={item.title} className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center flex-shrink-0">
+                    <item.icon className="w-5 h-5 text-brand" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-text-primary">{item.title}</p>
+                    <p className="text-sm text-text-secondary">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="bg-background-elevated border border-border rounded-2xl p-8 relative overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--color-brand-glow),_transparent_60%)]" />
+            <div className="relative space-y-5">
+              {['Encrypting vault…', 'Splitting key into 5 shards…', 'Distributing to guardians…', 'Deploying Soroban contract…'].map((line, i) => (
+                <motion.div
+                  key={line}
+                  initial={{ opacity: 0, x: -10 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.15 }}
+                  className="flex items-center gap-3 font-mono text-sm text-text-secondary"
+                >
+                  <CheckCircle className="w-4 h-4 text-success flex-shrink-0" />
+                  {line}
+                </motion.div>
+              ))}
+              <div className="pt-2 border-t border-border text-xs text-text-muted">
+                Zero-knowledge by default — your private keys never touch our infrastructure.
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* How it works */}
       <section id="how" className="py-24 bg-background-secondary">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-14">
             <p className="text-brand font-semibold text-sm mb-3 uppercase tracking-wide">How It Works</p>
-            <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">Simple. Secure. Automatic.</h2>
+            <h2 className="text-3xl md:text-4xl font-bold font-serif text-text-primary mb-4">Simple. Secure. Automatic.</h2>
           </div>
           <div className="grid md:grid-cols-2 gap-x-16 gap-y-8">
             {[
@@ -273,9 +354,9 @@ export default function Landing() {
       <section id="plans" className="py-24 max-w-4xl mx-auto px-6">
         <div className="text-center mb-14">
           <p className="text-brand font-semibold text-sm mb-3 uppercase tracking-wide">Pricing</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">Simple, transparent pricing</h2>
+          <h2 className="text-3xl md:text-4xl font-bold font-serif text-text-primary mb-4">Simple, transparent pricing</h2>
         </div>
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-3 gap-6">
           {[
             {
               name: 'Free',
@@ -285,11 +366,18 @@ export default function Landing() {
               features: ['4 beneficiaries', '5 guardians', '30-day check-in', '500MB encrypted vault', 'Email notifications', 'Stellar testnet']
             },
             {
-              name: 'Pro',
-              price: '$9.99',
-              period: '/month',
+              name: 'Enterprise',
+              price: 'Custom',
+              period: 'contact us',
               highlight: true,
               color: 'border-brand',
+              features: ['Unlimited beneficiaries', 'Unlimited guardians', 'Custom check-in intervals', 'Unlimited encrypted storage', 'Dedicated account manager', 'Priority support', 'On-chain enterprise SLA']
+            },
+            {
+              name: 'Pro',
+              price: '₹1,499',
+              period: '/month',
+              color: 'border-border',
               features: ['10 beneficiaries', '7 guardians', 'Custom intervals (7–90 days)', '5GB encrypted vault', 'SMS alerts', 'PDF will export', 'Priority support', 'Mainnet ready']
             },
           ].map((plan, i) => (
@@ -346,7 +434,7 @@ export default function Landing() {
             <div className="w-16 h-16 rounded-2xl bg-brand flex items-center justify-center mx-auto mb-6 shadow-xl shadow-brand/30">
               <Shield className="w-8 h-8 text-white" />
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold font-serif text-text-primary mb-4">
               Don't let your crypto die with you
             </h2>
             <p className="text-text-secondary text-lg mb-8 max-w-xl mx-auto">
@@ -371,7 +459,7 @@ export default function Landing() {
             <div className="w-7 h-7 rounded-lg bg-brand flex items-center justify-center">
               <Shield className="w-4 h-4 text-white" />
             </div>
-            <span className="font-semibold text-text-primary">CryptWill</span>
+            <span className="font-semibold text-text-primary font-serif">CryptWill</span>
           </div>
           <p className="text-sm text-text-muted">© 2025 CryptWill · Built on Stellar Soroban · No intermediaries</p>
           <div className="flex items-center gap-4 text-sm text-text-muted">

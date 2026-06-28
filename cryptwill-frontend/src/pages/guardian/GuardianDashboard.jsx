@@ -25,7 +25,7 @@ function GCard({ children, style = {} }) {
   return (
     <div style={{
       background: "rgba(10,7,22,0.78)",
-      border: "1px solid rgba(212,175,55,0.18)",
+      border: "1px solid rgba(198,143,130,0.18)",
       borderRadius: 20, padding: 24,
       backdropFilter: "blur(18px)",
       boxShadow: "0 8px 48px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.03)",
@@ -34,9 +34,9 @@ function GCard({ children, style = {} }) {
   );
 }
 
-function SH({ icon: Icon, children, color = "#d4af37" }) {
+function SH({ icon: Icon, children, color = "#c68f82" }) {
   return (
-    <h2 style={{ fontWeight:700, color:"#f5f0e8", marginBottom:18, display:"flex", alignItems:"center", gap:10, fontFamily:"Georgia,serif", fontSize:"1rem" }}>
+    <h2 style={{ fontWeight:700, color:"#f5f0e8", marginBottom:18, display:"flex", alignItems:"center", gap:10, fontFamily:"Inter, sans-serif", fontSize:"1rem" }}>
       <span style={{ width:30, height:30, borderRadius:8, background:`${color}18`, border:`1px solid ${color}30`, display:"inline-flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
         <Icon style={{ width:15, height:15, color }} />
       </span>
@@ -89,8 +89,8 @@ const CSS = `
 @keyframes spin{to{transform:rotate(360deg)}}
 .g-orb{position:absolute;border-radius:50%;filter:blur(72px);pointer-events:none;z-index:0}
 .g-tab{border:1px solid transparent;border-radius:10px;padding:7px 13px;font-size:.8rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .18s;color:rgba(200,180,150,.6);background:transparent;white-space:nowrap}
-.g-tab:hover{color:rgba(212,175,55,.85);background:rgba(212,175,55,.06);border-color:rgba(212,175,55,.2)}
-.g-tab.active{background:linear-gradient(135deg,rgba(212,175,55,.14),rgba(168,85,247,.09));border-color:rgba(212,175,55,.38)!important;color:#d4af37!important}
+.g-tab:hover{color:rgba(198,143,130,.85);background:rgba(198,143,130,.08);border-color:rgba(198,143,130,.28)}
+.g-tab.active{background:linear-gradient(135deg,rgba(198,143,130,.18),rgba(168,85,247,.09));border-color:rgba(198,143,130,.38)!important;color:#c68f82!important}
 .g-btn-ok{display:flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;padding:12px 20px;font-weight:600;font-size:.88rem;cursor:pointer;transition:all .2s;border:1px solid rgba(134,197,120,.38);background:rgba(134,197,120,.07);color:#86c578}
 .g-btn-ok:hover{background:rgba(134,197,120,.17);transform:translateY(-1px);box-shadow:0 4px 18px rgba(134,197,120,.18)}
 .g-btn-ok:disabled{opacity:.45;cursor:not-allowed;transform:none}
@@ -189,7 +189,7 @@ export default function GuardianDashboard() {
 
       <div style={{ position:"absolute", inset:0, overflow:"hidden", pointerEvents:"none" }}>
         <div className="g-orb" style={{ width:480, height:480, background:"radial-gradient(circle,rgba(147,51,234,.17) 0%,transparent 70%)", top:-80, right:-60, animation:"gOrb 14s ease-in-out infinite" }} />
-        <div className="g-orb" style={{ width:380, height:380, background:"radial-gradient(circle,rgba(212,175,55,.11) 0%,transparent 70%)", bottom:20, left:-50, animation:"gOrb2 17s ease-in-out infinite" }} />
+        <div className="g-orb" style={{ width:380, height:380, background:"radial-gradient(circle,rgba(198,143,130,.14) 0%,transparent 70%)", bottom:20, left:-50, animation:"gOrb2 17s ease-in-out infinite" }} />
         <div className="g-orb" style={{ width:260, height:260, background:"radial-gradient(circle,rgba(244,143,177,.07) 0%,transparent 70%)", top:"45%", left:"35%", animation:"gOrb 20s ease-in-out infinite 4s" }} />
         {[{t:"12%",l:"3%",c:"#a855f7",d:"0s",dr:"9s"},{t:"28%",r:"6%",c:"#d4af37",d:"2s",dr:"11s"},{t:"58%",l:"1%",c:"#f48fb1",d:"4s",dr:"8s"},{t:"78%",r:"4%",c:"#a855f7",d:"1s",dr:"12s"}].map((p,i)=>(
           <div key={i} style={{ position:"absolute", width:6, height:10, borderRadius:"60% 60% 40% 40%", background:p.c, opacity:.38, top:p.t, left:p.l, right:p.r, animation:`petal ${p.dr} ease-in-out infinite ${p.d}`, pointerEvents:"none", zIndex:0 }} />
@@ -199,10 +199,10 @@ export default function GuardianDashboard() {
       <motion.div initial={{ opacity:0, y:-12 }} animate={{ opacity:1, y:0 }} transition={{ duration:.5 }} style={{ position:"relative", zIndex:1, marginBottom:26, display:"flex", flexWrap:"wrap", alignItems:"flex-start", justifyContent:"space-between", gap:14 }}>
         <div>
           <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:6 }}>
-            <div style={{ width:42, height:42, borderRadius:12, background:"linear-gradient(135deg,rgba(212,175,55,.18),rgba(168,85,247,.13))", border:"1px solid rgba(212,175,55,.32)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <Shield style={{ width:20, height:20, color:"#d4af37" }} />
+            <div style={{ width:42, height:42, borderRadius:12, background:"linear-gradient(135deg,rgba(198,143,130,.18),rgba(168,85,247,.13))", border:"1px solid rgba(198,143,130,.32)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <Shield style={{ width:20, height:20, color:"#c68f82" }} />
             </div>
-            <h1 style={{ fontSize:"1.55rem", fontWeight:700, fontFamily:"Georgia,serif", background:"linear-gradient(135deg,#d4af37,#f5e6a3,#c8956b)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", margin:0 }}>Guardian Portal</h1>
+            <h1 style={{ fontSize:"1.55rem", fontWeight:700, fontFamily:"Inter, sans-serif", background:"linear-gradient(135deg,#c68f82,rgba(244,231,229,.92),#c0a09a)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", margin:0 }}>Guardian Portal</h1>
           </div>
           <p style={{ fontSize:"0.83rem", color:"rgba(200,180,150,.55)", paddingLeft:54 }}>
             {data?.ownerName ? `Synced with ${data.ownerName}'s inheritance plan` : "Invitations from estate owners appear here in real time"}
@@ -243,7 +243,7 @@ export default function GuardianDashboard() {
                 : sm.myPendingInvites.map(inv => (
                   <GCard key={inv.id} style={{ border:"1px solid rgba(245,158,11,.28)", boxShadow:"0 8px 40px rgba(0,0,0,.5),0 0 32px rgba(245,158,11,.06)" }}>
                     <div style={{ display:"flex", gap:14, marginBottom:14 }}>
-                      <div style={{ width:50, height:50, borderRadius:"50%", background:"linear-gradient(135deg,rgba(245,158,11,.18),rgba(212,175,55,.12))", border:"1px solid rgba(245,158,11,.28)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.25rem", fontWeight:700, color:"#f59e0b", flexShrink:0 }}>{inv.ownerName?.[0] || "O"}</div>
+                      <div style={{ width:50, height:50, borderRadius:"50%", background:"linear-gradient(135deg,rgba(198,143,130,.18),rgba(244,143,177,.12))", border:"1px solid rgba(198,143,130,.28)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.25rem", fontWeight:700, color:"#c68f82", flexShrink:0 }}>{inv.ownerName?.[0] || "O"}</div>
                       <div style={{ flex:1, minWidth:0 }}>
                         <p style={{ fontWeight:700, color:"#f5f0e8", fontSize:"1rem", fontFamily:"Georgia,serif" }}>{inv.ownerName} invited you as a Guardian</p>
                         <p style={{ fontSize:".82rem", color:"rgba(200,180,150,.6)", marginTop:4 }}>Named as <strong style={{ color:"#d4af37" }}>{inv.fullName}</strong> on their CryptWill plan.</p>
