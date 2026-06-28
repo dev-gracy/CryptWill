@@ -6,45 +6,56 @@
 
 @layer base {
   :root {
-    /* Light Theme — soft rose-gold vault palette */
-    --color-bg: #f6f1eb;
-    --color-bg-secondary: #ece3d8;
-    --color-bg-elevated: #ffffff;
-    --color-border: #d9bfaf;
+    /* Light Theme — elegant Rosegold palette with clear layer separation */
+    --color-bg: #f5ebe6;            /* page canvas — soft rosegold sand tint */
+    --color-bg-secondary: #e8d5cf; /* sidebar, sections — richer metallic rosegold */
+    --color-bg-elevated: #fffaf9;  /* cards — lightest pristine rose white */
+    --color-border: #d4b2a7;       /* elegant warm rosegold border */
 
-    --color-brand: #8d6453; /* rich terracotta accent */
-    --color-brand-hover: #755244;
-    --color-brand-glow: rgba(141, 100, 83, 0.18);
+    /* RGB channels for Tailwind opacity modifier support */
+    --color-brand-rgb: 198, 143, 130;  /* rosegold accent */
+    --color-brand: rgb(198, 143, 130);
+    --color-brand-hover: #a87b67;
+    --color-brand-glow: rgba(198, 143, 130, 0.2);
 
-    --color-success: #5f816f; /* muted sage */
-    --color-warning: #b28b62;
+    --color-success: #3d6b4f;
+    --color-warning: #a07840;
     --color-danger: #a34f4d;
 
-    --color-text-primary: #2d2521;
-    --color-text-secondary: #6d5d55;
-    --color-text-muted: #8b7c75;
+    --color-text-primary: #2d1c16;     /* deep warm charcoal text */
+    --color-text-secondary: #6e5046;   /* warm rose-brown text */
+    --color-text-muted: #95766c;       /* muted rose-brown text */
 
-    --color-shadow: rgba(72, 56, 58, 0.08);
+    --color-nav-bg: rgba(245, 235, 230, 0.92);
+    --color-nav-border: rgba(212, 178, 167, 0.55);
+    --color-card-shadow: 0 2px 12px rgba(110, 80, 70, 0.10), 0 1px 3px rgba(110, 80, 70, 0.06);
+    --color-shadow: rgba(100, 75, 78, 0.08);
   }
 
   .dark {
-    /* Dark Theme — Elegant vault with rose-gold accents and deeper charcoal contrast */
-    --color-bg: #0b162b;
-    --color-bg-secondary: #12243b;
-    --color-bg-elevated: #1d3154;
-    --color-border: #203855;
-    
-    --color-brand: #bfa38e;
-    --color-brand-hover: #a87b67;
-    --color-brand-glow: rgba(191,163,142,0.2);
-    
+    /* Dark Theme — Elegant Midnight Blue Vault with Charcoal Black Boxes and Rosegold Accents */
+    --color-bg: #070b15;            /* canvas — midnight blue */
+    --color-bg-secondary: #0d1222; /* sidebar, sections — deep midnight */
+    --color-bg-elevated: #15161c;  /* cards — charcoal black */
+    --color-border: #1f2738;       /* modern midnight border */
+
+    /* RGB channels for Tailwind opacity modifier support */
+    --color-brand-rgb: 198, 143, 130;  /* vibrant rosegold accent */
+    --color-brand: rgb(198, 143, 130);
+    --color-brand-hover: #d29d90;
+    --color-brand-glow: rgba(198, 143, 130, 0.25);
+
     --color-success: #8bb08d;
-    --color-warning: #d4a16e;
+    --color-warning: #e0b380;
     --color-danger: #e37b76;
-    
-    --color-text-primary: #ece5de;
-    --color-text-secondary: #c9b8ae;
-    --color-text-muted: #9f8d85;
+
+    --color-text-primary: #ece5de;     /* soft rosegold cream */
+    --color-text-secondary: #a8b8c9;   /* cool gray-blue secondary text */
+    --color-text-muted: #728293;       /* cool gray-blue muted text */
+
+    --color-nav-bg: rgba(7, 11, 21, 0.90);
+    --color-nav-border: rgba(31, 39, 56, 0.8);
+    --color-card-shadow: 0 8px 32px rgba(2, 3, 6, 0.65), inset 0 1px 0 rgba(255,255,255,0.02);
   }
 
   body {
@@ -79,12 +90,53 @@
 }
 
 @layer components {
+  /* Ultra-smooth card hover & glow */
   .card-glow {
-    @apply shadow-[0_0_0_1px_var(--color-border)] hover:shadow-[0_0_0_1px_var(--color-brand-glow),0_4px_20px_var(--color-brand-glow)] transition-shadow duration-300;
+    box-shadow: 0 0 0 1px var(--color-border);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .card-glow:hover {
+    box-shadow: 0 0 0 1px var(--color-brand), 0 12px 30px -10px var(--color-brand-glow);
+    transform: translateY(-4px);
+  }
+
+  /* Card with proper depth separation in both themes */
+  .card {
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--color-card-shadow);
+    border-radius: 16px;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
   
   .glass-panel {
     @apply bg-background-secondary/80 backdrop-blur-md border border-border;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Form controls input smooth interactions */
+  input, select, textarea {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  input:focus, select:focus, textarea:focus {
+    transform: scale(1.005);
+    box-shadow: 0 0 0 4px var(--color-brand-glow) !important;
+  }
+
+  /* Smooth list entry utility */
+  .animate-list-item {
+    animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes slideUpFade {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   /* Keep autofill from flashing light backgrounds in dark mode */

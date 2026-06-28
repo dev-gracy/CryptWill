@@ -19,6 +19,10 @@ export default {
           hover: 'var(--color-brand-hover)',
           glow: 'var(--color-brand-glow)',
         },
+        nav: {
+          bg: 'var(--color-nav-bg)',
+          border: 'var(--color-nav-border)',
+        },
         success: 'var(--color-success)',
         warning: 'var(--color-warning)',
         danger: 'var(--color-danger)',

@@ -45,27 +45,27 @@ export function MainLayout({ role = 'OWNER' }) {
   /* Sidebar theme tokens — aligned to the rose-gold vault palette */
   const ST = isDark ? {
     pageBg:      'var(--color-bg)',
-    sidebarBg:   'linear-gradient(180deg,#0b1326 0%,#101d36 55%,#0b1326 100%)',
-    sidebarBdr:  'rgba(198,143,130,0.16)',
-    logoBg:      'linear-gradient(135deg,rgba(198,143,130,0.18),rgba(255,255,255,0.06))',
+    sidebarBg:   'linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-secondary) 100%)',
+    sidebarBdr:  'var(--color-border)',
+    logoBg:      'linear-gradient(135deg, rgba(198,143,130,0.18), rgba(255,255,255,0.06))',
     logoBdr:     'rgba(198,143,130,0.24)',
     logoShadow:  '0 0 16px rgba(198,143,130,0.18)',
     logoIconClr: 'var(--color-brand)',
-    logoText:    'linear-gradient(135deg,var(--color-brand),rgba(245,224,216,0.85))',
-    divClr:      'rgba(255,255,255,0.08)',
-    navActive:   'linear-gradient(135deg,rgba(198,143,130,0.12),rgba(145,96,97,0.08))',
+    logoTextClr: 'var(--color-text-primary)',
+    divClr:      'var(--color-border)',
+    navActive:   'linear-gradient(135deg, rgba(198,143,130,0.12), rgba(198,143,130,0.06))',
     navActiveBdr:'rgba(198,143,130,0.25)',
     navActiveClr:'var(--color-brand)',
-    navInactiveClr:'rgba(244,234,223,0.78)',
+    navInactiveClr:'var(--color-text-secondary)',
     navIndicator:'var(--color-brand)',
     avatarBg:    'rgba(198,143,130,0.12)',
     avatarBdr:   'rgba(198,143,130,0.25)',
     avatarClr:   'var(--color-brand)',
     userNameClr: 'var(--color-text-primary)',
     userEmailClr:'var(--color-text-secondary)',
-    logoutClr:   'rgba(200,180,150,0.65)',
-    headerBg:    'rgba(16,26,54,0.85)',
-    headerBdr:   'rgba(198,143,130,0.12)',
+    logoutClr:   'var(--color-text-muted)',
+    headerBg:    'rgba(21,13,10,0.85)',
+    headerBdr:   'var(--color-border)',
     closeBtnClr: 'rgba(198,143,130,0.65)',
     badgePlanBg: 'rgba(198,143,130,0.1)',
     badgePlanBdr:'rgba(198,143,130,0.22)',
@@ -75,27 +75,27 @@ export function MainLayout({ role = 'OWNER' }) {
     checkinClr:  'var(--color-success)',
   } : {
     pageBg:      'var(--color-bg)',
-    sidebarBg:   'linear-gradient(180deg,#f7ede7 0%,#efdfd8 50%,#f7ede7 100%)',
-    sidebarBdr:  'rgba(198,143,130,0.16)',
-    logoBg:      'linear-gradient(135deg,rgba(198,143,130,0.16),rgba(255,255,255,0.8))',
+    sidebarBg:   'linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-secondary) 100%)',
+    sidebarBdr:  'var(--color-border)',
+    logoBg:      'linear-gradient(135deg, rgba(198,143,130,0.16), rgba(255,255,255,0.8))',
     logoBdr:     'rgba(198,143,130,0.24)',
     logoShadow:  '0 0 16px rgba(198,143,130,0.14)',
     logoIconClr: 'var(--color-brand)',
-    logoText:    'linear-gradient(135deg,var(--color-brand),rgba(245,224,216,0.9))',
-    divClr:      'rgba(198,143,130,0.2)',
-    navActive:   'linear-gradient(135deg,rgba(198,143,130,0.12),rgba(198,143,130,0.08))',
+    logoTextClr: 'var(--color-text-primary)',
+    divClr:      'var(--color-border)',
+    navActive:   'linear-gradient(135deg, rgba(198,143,130,0.12), rgba(198,143,130,0.08))',
     navActiveBdr:'rgba(198,143,130,0.25)',
     navActiveClr:'var(--color-brand)',
-    navInactiveClr:'rgba(44,36,28,0.62)',
+    navInactiveClr:'var(--color-text-secondary)',
     navIndicator:'var(--color-brand)',
     avatarBg:    'rgba(198,143,130,0.12)',
     avatarBdr:   'rgba(198,143,130,0.28)',
     avatarClr:   'var(--color-brand)',
     userNameClr: 'var(--color-text-primary)',
-    userEmailClr:'rgba(44,36,28,0.55)',
-    logoutClr:   'rgba(44,36,28,0.65)',
-    headerBg:    'rgba(255,255,255,0.9)',
-    headerBdr:   'rgba(198,143,130,0.18)',
+    userEmailClr:'var(--color-text-secondary)',
+    logoutClr:   'var(--color-text-muted)',
+    headerBg:    'rgba(245,235,230,0.85)',
+    headerBdr:   'var(--color-border)',
     closeBtnClr: 'rgba(198,143,130,0.65)',
     badgePlanBg: 'rgba(198,143,130,0.1)',
     badgePlanBdr:'rgba(198,143,130,0.22)',
@@ -190,8 +190,8 @@ export function MainLayout({ role = 'OWNER' }) {
               style={{ background: ST.logoBg, border: `1px solid ${ST.logoBdr}`, boxShadow: ST.logoShadow }}>
               <Shield className="w-5 h-5" style={{ color: ST.logoIconClr }} />
             </div>
-            <span className="font-bold text-lg"
-              style={{ fontFamily: 'Inter, sans-serif', background: ST.logoText, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <span className="font-bold text-lg font-serif"
+              style={{ color: ST.logoTextClr }}>
               CryptWill
             </span>
           </NavLink>
@@ -211,33 +211,39 @@ export function MainLayout({ role = 'OWNER' }) {
 
         {/* Nav */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {navItems.map(({ to, icon: Icon, label, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              onClick={() => setSidebarOpen(false)}
-              className={() => `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group relative`}
-              style={({ isActive }) => ({
-                background: isActive ? ST.navActive : 'transparent',
-                color: isActive ? ST.navActiveClr : ST.navInactiveClr,
-                border: isActive ? `1px solid ${ST.navActiveBdr}` : '1px solid transparent',
-              })}
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <motion.div layoutId="nav-indicator"
-                      className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full"
-                      style={{ background: ST.navIndicator }} />
-                  )}
-                  <Icon className="w-[18px] h-[18px] flex-shrink-0" />
-                  <span className="flex-1">{label}</span>
-                  {isActive && <ChevronRight className="w-3.5 h-3.5 opacity-60" />}
-                </>
-              )}
-            </NavLink>
-          ))}
+          {navItems.map(({ to, icon: Icon, label, end }) => {
+            const MotionNavLink = motion(NavLink);
+            return (
+              <MotionNavLink
+                key={to}
+                to={to}
+                end={end}
+                onClick={() => setSidebarOpen(false)}
+                className={() => `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group relative`}
+                whileHover={{ x: 6 }}
+                whileTap={{ scale: 0.985 }}
+                transition={{ type: 'spring', stiffness: 380, damping: 26 }}
+                style={({ isActive }) => ({
+                  background: isActive ? ST.navActive : 'transparent',
+                  color: isActive ? ST.navActiveClr : ST.navInactiveClr,
+                  border: isActive ? `1px solid ${ST.navActiveBdr}` : '1px solid transparent',
+                })}
+              >
+                {({ isActive }) => (
+                  <>
+                    {isActive && (
+                      <motion.div layoutId="nav-indicator"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full"
+                        style={{ background: ST.navIndicator }} />
+                    )}
+                    <Icon className="w-[18px] h-[18px] flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />
+                    <span className="flex-1 transition-all duration-300">{label}</span>
+                    {isActive && <ChevronRight className="w-3.5 h-3.5 opacity-60" />}
+                  </>
+                )}
+              </MotionNavLink>
+            );
+          })}
         </nav>
 
         {/* Check-in Button (Owner only) */}
@@ -348,10 +354,10 @@ export function MainLayout({ role = 'OWNER' }) {
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
+              initial={{ opacity: 0, y: 16, scale: 0.985 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -16, scale: 0.985 }}
+              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }} // smooth cubic-bezier curve
             >
               <Outlet />
             </motion.div>

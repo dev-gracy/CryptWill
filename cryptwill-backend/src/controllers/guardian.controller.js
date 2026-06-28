@@ -93,10 +93,14 @@ async function enrichInvites(invites) {
 async function listGuardians(req, res) {
   try {
     const guardians = await prisma.guardian.findMany({
-      where: { userId: req.user.id },
+      where: {
+        userId: req.user.id,
+        status: { not: 'REMOVED' },
+      },
       include: { votes: true },
       orderBy: { createdAt: 'desc' },
     });
+    // Include inviteToken so frontend can show copy-link button for pending invites
     return successResponse(res, 200, { guardians });
   } catch (err) {
     return errorResponse(res, 500, 'Failed to fetch guardians');
@@ -114,19 +118,44 @@ async function addGuardian(req, res) {
       data: { userId: req.user.id, fullName, email: normalizedEmail, phone, inviteToken },
     });
 
-    await getEmailQueue().add('guardian-invite', {
-      to: normalizedEmail,
-      subject: `${req.user.fullName} has named you as a Guardian on CryptWill`,
-      html: guardianInviteTemplate(req.user.fullName, fullName, inviteToken),
-      userId: req.user.id,
-      type: 'GUARDIAN_INVITE',
-      channel: 'EMAIL',
-    });
+    // Try to send email — capture failure so we can surface the invite link in the response
+    let emailDelivered = false;
+    let emailError = null;
+    try {
+      await getEmailQueue().add('guardian-invite', {
+        to: normalizedEmail,
+        subject: `${req.user.fullName} has named you as a Guardian on CryptWill`,
+        html: guardianInviteTemplate(req.user.fullName, fullName, inviteToken),
+        userId: req.user.id,
+        type: 'GUARDIAN_INVITE',
+        channel: 'EMAIL',
+      });
+
+      // Check the most-recent notification record to confirm delivery
+      const notif = await prisma.notification.findFirst({
+        where: { recipient: normalizedEmail, type: 'GUARDIAN_INVITE', userId: req.user.id },
+        orderBy: { createdAt: 'desc' },
+      });
+      emailDelivered = notif?.status === 'SENT';
+      if (!emailDelivered && notif?.failureReason) emailError = notif.failureReason;
+    } catch (emailErr) {
+      emailError = emailErr.message;
+    }
 
     const guardianAccount = await prisma.guardianAccount.findUnique({ where: { email: normalizedEmail } });
     const syncedToPortal = !!guardianAccount;
 
-    return successResponse(res, 201, { guardian, syncedToPortal });
+    // Always return the invite link — frontend shows it as a fallback when email didn't deliver
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const inviteLink = `${frontendUrl}/guardian/invite/${inviteToken}`;
+
+    return successResponse(res, 201, {
+      guardian,
+      syncedToPortal,
+      inviteLink,
+      emailDelivered,
+      ...(emailError && !emailDelivered ? { emailWarning: 'Email could not be delivered. Share the invite link manually.' } : {}),
+    });
   } catch (err) {
     return errorResponse(res, 500, 'Failed to add guardian');
   }

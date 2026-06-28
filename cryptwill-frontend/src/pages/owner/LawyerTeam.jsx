@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
+import { useAuthStore } from '../../store/authStore';
 
 function LawyerCard({ member }) {
   return (
@@ -87,13 +88,19 @@ function LawyerCard({ member }) {
 export default function LawyerTeam() {
   const [team, setTeam] = useState([]);
   const [loading, setLoading] = useState(true);
+  const user = useAuthStore(s => s.user);
 
   useEffect(() => {
+    if (user?.plan !== 'ENTERPRISE') {
+      setTeam([]);
+      setLoading(false);
+      return;
+    }
     api.get('/lawyers')
       .then(res => setTeam(res.data.data?.team || []))
       .catch(() => toast.error('Failed to load lawyer team'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [user]);
 
   if (loading) {
     return (

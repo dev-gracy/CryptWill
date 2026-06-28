@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Shield, Coins, Users, UserCheck, Vault, CheckCircle, Clock, AlertTriangle, ArrowRight, Zap, Activity, Lock, Sparkles } from "lucide-react";
@@ -32,75 +32,75 @@ export default function Dashboard() {
 
   /* ---- theme tokens ---- */
   const T = isDark ? {
-    headerBg:    "rgba(8,12,20,.96)",
-    headerBdr:   "rgba(129,96,83,.24)",
-    cardBg:      "rgba(24,36,63,.9)",
-    cardBorder:  "rgba(182,148,125,.18)",
-    cardShadow:  "0 24px 40px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.02)",
-    cardHoverBdr:"rgba(182,148,125,.24)",
-    titleGrad:   "linear-gradient(135deg,#a07f6f,#d2bcb0)",
-    subClr:      "rgba(235,224,215,.78)",
-    orb1:        "rgba(177,138,118,.12)",
-    orb2:        "rgba(198,143,130,.08)",
-    petalClrs:   ["#9f7260","#b18d76","#d3b38a"],
-    sectLabel:   "rgba(225,212,206,.65)",
-    sectVal:     "#eee4dd",
-    divider:     "rgba(175,148,125,.12)",
-    contractBg:  "rgba(24,34,60,.92)",
-    contractBdr: "rgba(175,148,125,.2)",
-    linkClr:     "#d6b7a9",
-    checkBg:     "rgba(86,119,85,.12)",
-    checkBdr:    "rgba(86,119,85,.24)",
-    checkBtnBg:  "linear-gradient(135deg,#7c9c73,#3f643f)",
+    headerBg:    "var(--color-bg-secondary)",
+    headerBdr:   "var(--color-border)",
+    cardBg:      "var(--color-bg-elevated)",
+    cardBorder:  "var(--color-border)",
+    cardShadow:  "var(--color-card-shadow)",
+    cardHoverBdr:"rgba(198,143,130,0.35)",
+    titleGrad:   "linear-gradient(135deg,#ece5de,#c68f82)",
+    subClr:      "var(--color-text-secondary)",
+    orb1:        "rgba(198,143,130,.06)",
+    orb2:        "rgba(198,143,130,.04)",
+    petalClrs:   ["#c68f82","#a87b67","#d4b8a5"],
+    sectLabel:   "var(--color-text-muted)",
+    sectVal:     "var(--color-text-primary)",
+    divider:     "var(--color-border)",
+    contractBg:  "var(--color-bg-elevated)",
+    contractBdr: "var(--color-border)",
+    linkClr:     "var(--color-brand)",
+    checkBg:     "rgba(61,107,79,.08)",
+    checkBdr:    "rgba(61,107,79,.22)",
+    checkBtnBg:  "linear-gradient(135deg,#3d6b4f,#2a4d36)",
     checkBtnClr: "#fff",
-    checkBtnSdw: "0 4px 20px rgba(86,119,85,.28)",
-    checkBtnHvr: "0 8px 28px rgba(86,119,85,.42)",
-    secHeadClr:  "#f0e6dc",
-    spinClr:     "#c2a089",
-    spinBdr:     "rgba(175,148,125,.1)",
-    upgradeClr:  "#d6b7a9",
-    upgradeBg:   "rgba(196,143,130,.14)",
-    upgradeBdr:  "rgba(196,143,130,.22)",
-    upgradeHov:  "rgba(196,143,130,.16)",
-    qaBg:        "rgba(18,24,42,.9)",
-    qaBdr:       "rgba(175,148,125,.12)",
-    qaHovBdr:    "rgba(175,148,125,.26)",
-    qaHovBg:     "rgba(175,148,125,.05)",
+    checkBtnSdw: "0 4px 20px rgba(61,107,79,.22)",
+    checkBtnHvr: "0 8px 28px rgba(61,107,79,.35)",
+    secHeadClr:  "var(--color-text-primary)",
+    spinClr:     "var(--color-brand)",
+    spinBdr:     "var(--color-border)",
+    upgradeClr:  "var(--color-brand)",
+    upgradeBg:   "rgba(198,143,130,.08)",
+    upgradeBdr:  "rgba(198,143,130,.22)",
+    upgradeHov:  "rgba(198,143,130,.14)",
+    qaBg:        "var(--color-bg-elevated)",
+    qaBdr:       "var(--color-border)",
+    qaHovBdr:    "rgba(198,143,130,.4)",
+    qaHovBg:     "rgba(198,143,130,.04)",
   } : {
-    cardBg:      "rgba(255,255,255,.98)",
-    cardBorder:  "rgba(214,179,166,.22)",
-    cardShadow:  "0 24px 40px rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255,.95)",
-    cardHoverBdr:"rgba(179,132,118,.24)",
-    titleGrad:   "linear-gradient(135deg,#8d5f4f,#c9af9d)",
-    subClr:      "rgba(85,68,60,.68)",
-    headerBg:    "rgba(104,67,55,.18)",
-    headerBdr:   "rgba(127,78,65,.24)",
-    orb1:        "rgba(177,130,118,.08)",
-    orb2:        "rgba(193,154,118,.06)",
-    petalClrs:   ["#ae7b69","#92705f","#d1ab7f"],
-    sectLabel:   "rgba(99,77,69,.55)",
-    sectVal:     "#3e332f",
-    divider:     "rgba(214,179,166,.16)",
-    contractBg:  "rgba(255,255,255,.96)",
-    contractBdr: "rgba(214,179,166,.2)",
-    linkClr:     "#a26f61",
-    checkBg:     "rgba(113,136,106,.08)",
-    checkBdr:    "rgba(113,136,106,.18)",
-    checkBtnBg:  "linear-gradient(135deg,#5D7A61,#3d5a41)",
+    cardBg:      "var(--color-bg-elevated)",
+    cardBorder:  "var(--color-border)",
+    cardShadow:  "var(--color-card-shadow)",
+    cardHoverBdr:"rgba(198,143,130,0.35)",
+    titleGrad:   "linear-gradient(135deg,#956a5c,#d29e88)",
+    subClr:      "var(--color-text-secondary)",
+    headerBg:    "rgba(198,143,130,0.12)",
+    headerBdr:   "rgba(198,143,130,0.28)",
+    orb1:        "rgba(198,143,130,.07)",
+    orb2:        "rgba(198,143,130,.05)",
+    petalClrs:   ["#c68f82","#a87b67","#d4b8a5"],
+    sectLabel:   "var(--color-text-muted)",
+    sectVal:     "var(--color-text-primary)",
+    divider:     "var(--color-border)",
+    contractBg:  "var(--color-bg-elevated)",
+    contractBdr: "var(--color-border)",
+    linkClr:     "var(--color-brand)",
+    checkBg:     "rgba(61,107,79,.08)",
+    checkBdr:    "rgba(61,107,79,.22)",
+    checkBtnBg:  "linear-gradient(135deg,#3d6b4f,#2a4d36)",
     checkBtnClr: "#fff",
-    checkBtnSdw: "0 4px 20px rgba(93,122,97,.22)",
-    checkBtnHvr: "0 8px 28px rgba(93,122,97,.35)",
-    secHeadClr:  "#3e332f",
-    spinClr:     "#9b7164",
-    spinBdr:     "rgba(181,130,128,.1)",
-    upgradeClr:  "#9b7164",
-    upgradeBg:   "rgba(181,130,128,.08)",
-    upgradeBdr:  "rgba(181,130,128,.2)",
-    upgradeHov:  "rgba(181,130,128,.14)",
-    qaBg:        "rgba(255,255,255,.92)",
-    qaBdr:       "rgba(214,179,166,.12)",
-    qaHovBdr:    "rgba(214,179,166,.22)",
-    qaHovBg:     "rgba(214,179,166,.04)",
+    checkBtnSdw: "0 4px 20px rgba(61,107,79,.22)",
+    checkBtnHvr: "0 8px 28px rgba(61,107,79,.35)",
+    secHeadClr:  "var(--color-text-primary)",
+    spinClr:     "var(--color-brand)",
+    spinBdr:     "rgba(198,143,130,.12)",
+    upgradeClr:  "var(--color-brand)",
+    upgradeBg:   "rgba(198,143,130,.08)",
+    upgradeBdr:  "rgba(198,143,130,.22)",
+    upgradeHov:  "rgba(198,143,130,.14)",
+    qaBg:        "var(--color-bg-elevated)",
+    qaBdr:       "var(--color-border)",
+    qaHovBdr:    "rgba(198,143,130,.4)",
+    qaHovBg:     "rgba(198,143,130,.04)",
   };
 
   const CSS = `
@@ -108,9 +108,9 @@ export default function Dashboard() {
 @keyframes oOrb2{0%,100%{transform:translate(0,0) scale(1);opacity:.15}45%{transform:translate(-20px,10px) scale(1.1);opacity:.3}75%{transform:translate(12px,-7px) scale(.9);opacity:.12}}
 @keyframes petalO{0%,100%{transform:translateY(0) rotate(0deg);opacity:.38}50%{transform:translateY(-12px) rotate(180deg);opacity:.15}}
 @keyframes spin{to{transform:rotate(360deg)}}
-.o-card{background:${T.cardBg};border:1px solid ${T.cardBorder};border-radius:18px;padding:20px;backdrop-filter:blur(16px);box-shadow:${T.cardShadow};transition:all .22s}
-.o-card:hover{border-color:${T.cardHoverBdr};transform:translateY(-3px)}
-.qa-lnk{display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:14px;background:${T.qaBg};border:1px solid ${T.qaBdr};text-decoration:none;transition:all .2s;backdrop-filter:blur(12px)}
+.o-card{background:${T.cardBg};border:1px solid ${T.cardBorder};border-radius:18px;padding:20px;box-shadow:${T.cardShadow};transition:all .22s}
+.o-card:hover{border-color:${T.cardHoverBdr};transform:translateY(-3px);box-shadow:${T.cardShadow},0 0 0 0px rgba(198,143,130,0)}
+.qa-lnk{display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:14px;background:${T.qaBg};border:1px solid ${T.qaBdr};text-decoration:none;transition:all .2s;box-shadow:${T.cardShadow}}
 .qa-lnk:hover{border-color:${T.qaHovBdr};background:${T.qaHovBg};transform:translateY(-2px)}
 `;
 
@@ -164,9 +164,9 @@ export default function Dashboard() {
       </div>
 
       {/* Header */}
-      <motion.div initial={{ opacity:0, y:-12 }} animate={{ opacity:1, y:0 }} style={{ position:"relative", zIndex:1, marginBottom:28, display:"flex", alignItems:"flex-start", justifyContent:"space-between", flexWrap:"wrap", gap:14, padding:22, borderRadius:24, background:T.headerBg, border:`1px solid ${T.headerBdr}` }}>
+      <motion.div initial={{ opacity:0, y:-12 }} animate={{ opacity:1, y:0 }} style={{ position:"relative", zIndex:1, marginBottom:28, display:"flex", alignItems:"flex-start", justifyContent:"space-between", flexWrap:"wrap", gap:14, padding:22, borderRadius:24, background:T.headerBg, border:`1px solid ${T.headerBdr}`, boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.2)' : '0 2px 16px rgba(80,55,45,0.08)' }}>
         <div>
-          <h1 style={{ fontSize:"1.55rem", fontWeight:700, fontFamily:"Playfair Display, Georgia, serif", color:"#e5d8cf", margin:"0 0 6px" }}>
+          <h1 style={{ fontSize:"1.55rem", fontWeight:700, fontFamily:"Playfair Display, Georgia, serif", color: T.secHeadClr, margin:"0 0 6px" }}>
             Welcome back, {user?.fullName?.split(" ")[0]} ✦
           </h1>
           <p style={{ fontSize:".83rem", color:T.subClr }}>Your crypto inheritance plan at a glance</p>

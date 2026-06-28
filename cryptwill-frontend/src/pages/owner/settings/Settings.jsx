@@ -328,48 +328,54 @@ function SubscriptionTab({ user }) {
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
         {plans.map(plan => (
           <div
             key={plan.id}
-            className={`rounded-2xl border p-5 relative ${
-              plan.highlight ? 'border-brand bg-brand/5' : 'border-border bg-background-elevated'
+            className={`rounded-2xl border p-5 relative flex flex-col justify-between ${
+              plan.highlight 
+                ? 'border-brand bg-brand/5 shadow-lg shadow-brand/5 scale-[1.02] z-10' 
+                : 'border-border bg-background-elevated'
             }`}
           >
-            {plan.highlight && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand text-white text-xs px-3 py-1 rounded-full font-semibold">
-                Most Popular
+            <div>
+              {plan.highlight && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand text-white text-xs px-3 py-1 rounded-full font-semibold">
+                  Most Popular
+                </div>
+              )}
+              <div className="mb-4">
+                <p className="font-bold text-text-primary text-lg">{plan.name}</p>
+                <p className="text-2xl font-bold text-text-primary">
+                  {plan.price}<span className="text-sm font-normal text-text-muted">{plan.period}</span>
+                </p>
               </div>
-            )}
-            <div className="mb-4">
-              <p className="font-bold text-text-primary text-lg">{plan.name}</p>
-              <p className="text-2xl font-bold text-text-primary">
-                {plan.price}<span className="text-sm font-normal text-text-muted">{plan.period}</span>
-              </p>
+              <ul className="space-y-2.5 mb-6">
+                {plan.features.map(f => (
+                  <li key={f} className="flex items-center gap-2 text-xs text-text-secondary">
+                    <Check className="w-3.5 h-3.5 text-success flex-shrink-0" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul className="space-y-2 mb-5">
-              {plan.features.map(f => (
-                <li key={f} className="flex items-center gap-2 text-sm text-text-secondary">
-                  <Check className="w-3.5 h-3.5 text-success flex-shrink-0" />
-                  {f}
-                </li>
-              ))}
-            </ul>
-            {user?.plan === plan.id ? (
-              <div className="text-center py-2 text-sm text-success font-medium flex items-center justify-center gap-2">
-                <Check className="w-4 h-4" /> Current Plan
-              </div>
-            ) : (
-              <Button
-                className="w-full"
-                variant={plan.highlight ? 'primary' : 'outline'}
-                isLoading={upgrading === plan.id}
-                disabled={!!upgrading}
-                onClick={() => handleUpgrade(plan.id)}
-              >
-                {user?.plan === 'PRO' && plan.id === 'FREE' ? 'Downgrade' : `Upgrade to ${plan.name}`}
-              </Button>
-            )}
+            <div className="pt-2">
+              {user?.plan === plan.id ? (
+                <div className="text-center py-2 text-sm text-success font-medium flex items-center justify-center gap-2">
+                  <Check className="w-4 h-4" /> Current Plan
+                </div>
+              ) : (
+                <Button
+                  className="w-full"
+                  variant={plan.highlight ? 'primary' : 'outline'}
+                  isLoading={upgrading === plan.id}
+                  disabled={!!upgrading}
+                  onClick={() => handleUpgrade(plan.id)}
+                >
+                  {user?.plan === 'PRO' && plan.id === 'FREE' ? 'Downgrade' : `Upgrade to ${plan.name}`}
+                </Button>
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -431,7 +437,7 @@ export default function SettingsPage() {
   const { user, updateUser } = useAuthStore();
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-5xl">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-2xl font-bold text-text-primary flex items-center gap-2">
           <Settings className="w-6 h-6 text-brand" />

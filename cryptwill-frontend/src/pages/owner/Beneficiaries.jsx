@@ -7,6 +7,7 @@ import {
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 import Button from '../../components/common/Button';
+import { useAuthStore } from '../../store/authStore';
 
 const statusColors = {
   ACTIVE: 'text-success bg-success/10',
@@ -117,6 +118,7 @@ export default function Beneficiaries() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingBen, setEditingBen] = useState(null);
+  const user = useAuthStore(s => s.user);
 
   useEffect(() => {
     api.get('/beneficiaries').then(res => setBeneficiaries(res.data.data?.beneficiaries || []))
@@ -164,18 +166,28 @@ export default function Beneficiaries() {
       </motion.div>
 
       {/* Plan limit reminder */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
-        className="flex items-center gap-3 px-4 py-3 rounded-xl bg-brand/5 border border-brand/20"
-      >
-        <Percent className="w-4 h-4 text-brand flex-shrink-0" />
-        <p className="text-sm text-text-secondary">
-          <span className="text-text-primary font-medium">{beneficiaries.length}/4</span> beneficiaries on Free plan. 
-          <span className="text-brand font-medium ml-1 cursor-pointer hover:underline">Upgrade to Pro</span> for up to 10.
-        </p>
-      </motion.div>
+      {user?.plan !== 'ENTERPRISE' && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl bg-brand/5 border border-brand/20"
+        >
+          <Percent className="w-4 h-4 text-brand flex-shrink-0" />
+          <p className="text-sm text-text-secondary">
+            {user?.plan === 'PRO' ? (
+              <>
+                <span className="text-text-primary font-medium">{beneficiaries.length}/10</span> beneficiaries on Pro plan.
+              </>
+            ) : (
+              <>
+                <span className="text-text-primary font-medium">{beneficiaries.length}/4</span> beneficiaries on Free plan.
+                <span className="text-brand font-medium ml-1 cursor-pointer hover:underline">Upgrade to Pro</span> for up to 10.
+              </>
+            )}
+          </p>
+        </motion.div>
+      )}
 
       {beneficiaries.length === 0 ? (
         <motion.div

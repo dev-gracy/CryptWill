@@ -27,6 +27,25 @@ function ensureSchema(db) {
       "updatedAt" TEXT NOT NULL
     )
   `);
+  db.run(`
+    CREATE TABLE IF NOT EXISTS "LawyerTeamMember" (
+      "id" TEXT NOT NULL PRIMARY KEY,
+      "userId" TEXT NOT NULL,
+      "fullName" TEXT NOT NULL,
+      "email" TEXT NOT NULL,
+      "role" TEXT NOT NULL DEFAULT 'LAWYER',
+      "firmName" TEXT,
+      "phone" TEXT,
+      "barNumber" TEXT,
+      "experience" TEXT,
+      "notes" TEXT,
+      "status" TEXT NOT NULL DEFAULT 'INVITED',
+      "inviteToken" TEXT,
+      "createdAt" TEXT NOT NULL,
+      "updatedAt" TEXT NOT NULL,
+      FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE
+    )
+  `);
   _dirty = true;
 
   const lawyerCols = rowsToObjects(db.exec(`PRAGMA table_info("LawyerTeamMember")`));

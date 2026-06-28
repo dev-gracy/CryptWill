@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   UserCheck, Plus, Trash2, Edit3, X, Mail, Phone,
-  ShieldCheck, Clock, AlertCircle, CheckCircle2, Send, ThumbsUp, ThumbsDown, Info, Copy
+  ShieldCheck, Clock, AlertCircle, CheckCircle2, Send, ThumbsUp, ThumbsDown, Info, Copy, Link, CheckCheck
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
@@ -14,6 +14,104 @@ const statusColors = {
   DECLINED: 'text-danger bg-danger/10',
   REMOVED: 'text-text-muted bg-border/30',
 };
+
+// ── Invite Link Modal ────────────────────────────────────────────────────────
+function InviteLinkModal({ guardianName, inviteLink, onClose }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setCopied(true);
+      toast.success('Invite link copied!');
+      setTimeout(() => setCopied(false), 3000);
+    } catch {
+      toast.error('Failed to copy — please copy it manually');
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <motion.div
+        initial={{ scale: 0.92, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.92, opacity: 0 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+        className="bg-background-elevated border border-border rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden"
+      >
+        {/* Warning banner */}
+        <div className="bg-warning/10 border-b border-warning/20 px-6 py-3 flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-warning flex-shrink-0" />
+          <p className="text-sm text-warning font-medium">
+            Email delivery failed — share this link manually
+          </p>
+        </div>
+
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="font-semibold text-text-primary flex items-center gap-2">
+              <Link className="w-5 h-5 text-brand" />
+              Guardian Invite Link
+            </h3>
+            <button onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <p className="text-sm text-text-secondary mb-4">
+            The invitation email to <strong className="text-text-primary">{guardianName}</strong> couldn't be delivered
+            (Resend requires domain verification for external emails). Share this link with them directly:
+          </p>
+
+          {/* Link box */}
+          <div className="bg-background rounded-xl border border-border p-3 mb-4">
+            <p className="text-xs text-text-muted mb-2 font-medium uppercase tracking-wide">Invite Link</p>
+            <p className="text-xs text-brand break-all font-mono leading-relaxed">{inviteLink}</p>
+          </div>
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleCopy}
+            className={`w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all duration-300 ${
+              copied
+                ? 'bg-success/15 text-success border border-success/30'
+                : 'bg-brand text-white hover:bg-brand/90'
+            }`}
+          >
+            {copied
+              ? <><CheckCheck className="w-4 h-4" />Copied to clipboard!</>
+              : <><Copy className="w-4 h-4" />Copy Invite Link</>
+            }
+          </motion.button>
+
+          <p className="text-xs text-text-muted mt-4 text-center leading-relaxed">
+            💡 Send this via <strong>WhatsApp, Telegram, or SMS</strong>. The link is valid for <strong>7 days</strong>.
+          </p>
+
+          <div className="mt-4 p-3 rounded-xl bg-brand/5 border border-brand/20">
+            <p className="text-xs text-text-secondary">
+              <strong>To enable automatic email delivery:</strong> Go to{' '}
+              <a
+                href="https://resend.com/domains"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-brand underline hover:text-brand/80"
+              >
+                resend.com/domains
+              </a>{' '}
+              and verify your domain.
+            </p>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
 
 function GuardianModal({ guardian, onClose, onSave }) {
   const isEdit = !!guardian?.id;
@@ -33,15 +131,19 @@ function GuardianModal({ guardian, onClose, onSave }) {
     try {
       if (isEdit) {
         const res = await api.put(`/guardians/${guardian.id}`, formData);
-        onSave(res.data.data.guardian, 'edit');
+        onSave(res.data.data.guardian, 'edit', null);
       } else {
         const res = await api.post('/guardians', formData);
-        onSave(res.data.data.guardian, 'add');
-        if (res.data.data.syncedToPortal) {
+        const data = res.data.data;
+        // Pass inviteLink + emailWarning back so parent can show the copy-link modal
+        onSave(data.guardian, 'add', data.emailWarning ? data.inviteLink : null, formData.fullName);
+        if (data.syncedToPortal) {
           toast.success('Guardian invited — they will see it in their Guardian Portal', { duration: 5000 });
+        } else if (data.emailDelivered) {
+          toast.success('Invitation email sent!', { icon: '📧' });
         }
       }
-      toast.success(isEdit ? 'Guardian updated!' : 'Guardian invited!');
+      if (isEdit) toast.success('Guardian updated!');
       onClose();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to save');
@@ -133,6 +235,7 @@ export default function Guardians() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingGuardian, setEditingGuardian] = useState(null);
+  const [pendingInviteLink, setPendingInviteLink] = useState(null); // { link, guardianName }
 
   useEffect(() => {
     api.get('/guardians').then(res => setGuardians(res.data.data?.guardians || []))
@@ -140,9 +243,11 @@ export default function Guardians() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleSave = (saved, mode) => {
+  const handleSave = (saved, mode, inviteLink = null, guardianName = null) => {
     if (mode === 'add') setGuardians(p => [...p, saved]);
     else setGuardians(p => p.map(g => g.id === saved.id ? saved : g));
+    // If email failed, show the copy-link modal
+    if (inviteLink) setPendingInviteLink({ link: inviteLink, guardianName: guardianName || saved.fullName });
   };
 
   const handleDelete = async (id) => {
@@ -332,6 +437,17 @@ export default function Guardians() {
             guardian={editingGuardian}
             onClose={() => { setShowModal(false); setEditingGuardian(null); }}
             onSave={handleSave}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Invite link fallback modal — shown when Resend email delivery fails */}
+      <AnimatePresence>
+        {pendingInviteLink && (
+          <InviteLinkModal
+            guardianName={pendingInviteLink.guardianName}
+            inviteLink={pendingInviteLink.link}
+            onClose={() => setPendingInviteLink(null)}
           />
         )}
       </AnimatePresence>

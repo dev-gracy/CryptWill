@@ -11,12 +11,11 @@ import HeroPortal from '../../components/landing/HeroPortal';
 function AnimatedGradientOrb({ className }) {
   return (
     <motion.div
-      className={`absolute rounded-full blur-3xl opacity-20 ${className}`}
+      className={`absolute rounded-full blur-[120px] ${className}`}
       animate={{
-        scale: [1, 1.3, 1],
-        opacity: [0.15, 0.3, 0.15],
+        scale: [1, 1.2, 1],
       }}
-      transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+      transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
     />
   );
 }
@@ -81,7 +80,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Nav */}
-      <nav className="fixed top-0 inset-x-0 z-50 backdrop-blur-md bg-background/80 border-b border-border/50">
+      <nav className="fixed top-0 inset-x-0 z-50 backdrop-blur-xl bg-nav-bg border-b border-nav-border shadow-lg shadow-black/5 dark:shadow-slate-950/20">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center shadow-md shadow-brand/30">
@@ -109,14 +108,13 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden bg-slate-950/10">
-        {/* Background orbs */}
-        <AnimatedGradientOrb className="w-96 h-96 bg-brand -top-10 -left-10" />
-        <AnimatedGradientOrb className="w-80 h-80 bg-brand/40 top-1/2 -right-20" />
-        <AnimatedGradientOrb className="w-64 h-64 bg-brand/30 bottom-10 left-1/3" />
+      <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden bg-gradient-to-br from-background via-background to-background-secondary dark:from-[#070b15] dark:via-[#070b15] dark:to-[#0d1222]">
+        {/* Background orbs — beautiful rich indigo/violet/rosegold merge */}
+        <AnimatedGradientOrb className="w-[500px] h-[500px] bg-brand/10 dark:bg-brand/15 -top-10 -left-10" />
+        <AnimatedGradientOrb className="w-[600px] h-[600px] bg-indigo-600/10 dark:bg-indigo-500/25 top-10 -right-20" />
+        <AnimatedGradientOrb className="w-[450px] h-[450px] bg-violet-600/10 dark:bg-violet-500/18 bottom-10 left-1/3" />
 
-        {/* Grid pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(155,94,79,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(155,94,79,0.05)_1px,transparent_1px)] bg-[size:50px_50px]" />
+
 
         <motion.div
           style={{ y: heroY, opacity: heroOpacity }}
@@ -128,8 +126,8 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="inline-flex items-center gap-2 bg-brand/10 border border-brand/30 px-4 py-2 rounded-full text-sm text-brand font-medium mb-8">
-              <Zap className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-2 bg-brand/8 dark:bg-white/10 border border-brand/20 dark:border-white/10 px-4 py-2 rounded-full text-sm text-brand dark:text-white/85 font-medium mb-8 backdrop-blur-sm">
+              <Zap className="w-3.5 h-3.5 text-brand dark:text-white" />
               Powered by Stellar Soroban Smart Contracts
             </div>
           </motion.div>
@@ -138,7 +136,7 @@ export default function Landing() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.7 }}
-            className="text-5xl md:text-6xl font-bold font-serif text-white leading-tight mb-6"
+            className="text-5xl md:text-6xl font-bold font-serif text-text-primary dark:text-white leading-tight mb-6"
           >
             Your crypto.<br />
             <span className="text-brand relative">
@@ -158,7 +156,7 @@ export default function Landing() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="text-lg md:text-xl text-slate-200 max-w-xl mx-auto lg:mx-0 mb-10 leading-relaxed"
+            className="text-lg md:text-xl text-text-secondary dark:text-slate-200/90 max-w-xl mx-auto lg:mx-0 mb-10 leading-relaxed"
           >
             CryptWill is a decentralized digital inheritance platform designed to feel like a calm, heavenly vault.
             Your crypto legacy is protected behind a serene gate of light, flowers, and secure smart contracts.
@@ -167,7 +165,7 @@ export default function Landing() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.6 }}
-            className="text-sm text-slate-300 max-w-xl mx-auto lg:mx-0 mb-10 leading-relaxed"
+            className="text-sm text-text-muted dark:text-slate-300/80 max-w-xl mx-auto lg:mx-0 mb-10 leading-relaxed"
           >
             Works beautifully in both light and dark mode, reflecting safe wealth, peace, and trust through every step.
           </motion.p>
@@ -180,14 +178,15 @@ export default function Landing() {
           >
             <Link
               to="/signup"
-              className="inline-flex items-center justify-center gap-2 bg-brand text-white px-8 py-3.5 rounded-xl font-semibold text-base hover:bg-brand-hover transition-all duration-200 shadow-lg shadow-brand/25 hover:shadow-brand/40 hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center gap-2 bg-brand text-white px-8 py-3.5 rounded-xl font-semibold text-base hover:bg-brand-hover transition-all duration-200 shadow-lg hover:-translate-y-0.5"
+              style={{ boxShadow: '0 8px 24px rgba(var(--color-brand-rgb),0.28)' }}
             >
               Start For Free
               <ArrowRight className="w-4 h-4" />
             </Link>
             <a
               href="#how"
-              className="inline-flex items-center justify-center gap-2 bg-background-elevated border border-border text-text-primary px-8 py-3.5 rounded-xl font-semibold text-base hover:border-brand/50 transition-colors"
+              className="inline-flex items-center justify-center gap-2 bg-background-elevated/80 dark:bg-slate-900/90 border border-border dark:border-slate-700/60 text-text-primary dark:text-slate-100 px-8 py-3.5 rounded-xl font-semibold text-base hover:border-brand/50 transition-colors backdrop-blur-sm"
             >
               See How It Works
             </a>
@@ -198,7 +197,7 @@ export default function Landing() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
-            className="flex flex-wrap items-center justify-center lg:justify-start gap-6 mt-12 text-sm text-slate-300"
+            className="flex flex-wrap items-center justify-center lg:justify-start gap-6 mt-12 text-sm text-text-secondary dark:text-slate-300"
           >
             {['AES-256 Encrypted', 'No Intermediaries', 'Stellar Testnet', 'Open Source'].map(badge => (
               <div key={badge} className="flex items-center gap-2">
@@ -366,19 +365,19 @@ export default function Landing() {
               features: ['4 beneficiaries', '5 guardians', '30-day check-in', '500MB encrypted vault', 'Email notifications', 'Stellar testnet']
             },
             {
-              name: 'Enterprise',
-              price: 'Custom',
-              period: 'contact us',
-              highlight: true,
-              color: 'border-brand',
-              features: ['Unlimited beneficiaries', 'Unlimited guardians', 'Custom check-in intervals', 'Unlimited encrypted storage', 'Dedicated account manager', 'Priority support', 'On-chain enterprise SLA']
-            },
-            {
               name: 'Pro',
               price: '₹1,499',
               period: '/month',
-              color: 'border-border',
+              highlight: true,
+              color: 'border-brand',
               features: ['10 beneficiaries', '7 guardians', 'Custom intervals (7–90 days)', '5GB encrypted vault', 'SMS alerts', 'PDF will export', 'Priority support', 'Mainnet ready']
+            },
+            {
+              name: 'Enterprise',
+              price: 'Custom',
+              period: 'contact us',
+              color: 'border-border',
+              features: ['Unlimited beneficiaries', 'Unlimited guardians', 'Custom check-in intervals', 'Unlimited encrypted storage', 'Dedicated account manager', 'Priority support', 'On-chain enterprise SLA']
             },
           ].map((plan, i) => (
             <motion.div
@@ -387,7 +386,7 @@ export default function Landing() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className={`rounded-2xl border-2 p-7 relative ${plan.color} ${plan.highlight ? 'bg-brand/5' : 'bg-background-elevated'}`}
+              className={`rounded-2xl border-2 p-7 relative ${plan.color} ${plan.highlight ? 'bg-background-elevated ring-2 ring-brand/20' : 'bg-background-elevated'}`}
             >
               {plan.highlight && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-brand text-white text-xs px-4 py-1 rounded-full font-semibold">
