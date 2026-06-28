@@ -63,8 +63,7 @@ function InviteLinkModal({ guardianName, inviteLink, onClose }) {
           </div>
 
           <p className="text-sm text-text-secondary mb-4">
-            The invitation email to <strong className="text-text-primary">{guardianName}</strong> couldn't be delivered
-            (Resend requires domain verification for external emails). Share this link with them directly:
+            The invitation email to <strong className="text-text-primary">{guardianName}</strong> couldn't be delivered. Share this link with them directly:
           </p>
 
           {/* Link box */}
@@ -92,21 +91,6 @@ function InviteLinkModal({ guardianName, inviteLink, onClose }) {
           <p className="text-xs text-text-muted mt-4 text-center leading-relaxed">
             💡 Send this via <strong>WhatsApp, Telegram, or SMS</strong>. The link is valid for <strong>7 days</strong>.
           </p>
-
-          <div className="mt-4 p-3 rounded-xl bg-brand/5 border border-brand/20">
-            <p className="text-xs text-text-secondary">
-              <strong>To enable automatic email delivery:</strong> Go to{' '}
-              <a
-                href="https://resend.com/domains"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-brand underline hover:text-brand/80"
-              >
-                resend.com/domains
-              </a>{' '}
-              and verify your domain.
-            </p>
-          </div>
         </div>
       </motion.div>
     </motion.div>

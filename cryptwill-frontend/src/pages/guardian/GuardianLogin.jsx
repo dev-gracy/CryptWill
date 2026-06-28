@@ -295,6 +295,17 @@ export default function GuardianLogin() {
                 </div>
               </motion.div>
 
+              {/* Forgot password link */}
+              <div className="text-right -mt-1">
+                <Link
+                  to="/guardian/forgot-password"
+                  className="text-xs font-semibold hover:opacity-70 transition-opacity underline underline-offset-2"
+                  style={{ color: '#b8836a' }}
+                >
+                  Forgot password?
+                </Link>
+              </div>
+
               {/* Submit button */}
               <motion.button
                 type="submit"

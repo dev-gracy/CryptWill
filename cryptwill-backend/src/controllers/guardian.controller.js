@@ -3,13 +3,19 @@ const prisma = require('../config/db');
 const { successResponse, errorResponse } = require('../middlewares/errorHandler');
 const { getEmailQueue, getSmsQueue } = require('../config/queues');
 const { signInviteToken, verifyToken, signAccessToken, verifyAccessToken } = require('../utils/jwt.utils');
+const { generateOTP, getOTPExpiry, hashOTP, verifyOTP } = require('../utils/otp.utils');
 const { isEmailFallbackMode } = require('../services/email.service');
 
 const GUARDIAN_COOKIE = 'guardianAccessToken';
 const DEV_FALLBACK_PASSWORD = '12345678';
+const DEV_FALLBACK_OTP = '123456';
 
 function isFallbackAuthEnabled() {
   return isEmailFallbackMode() || process.env.ALLOW_DEV_AUTH_FALLBACK === 'true';
+}
+
+function getOtpForCurrentMode() {
+  return isFallbackAuthEnabled() ? DEV_FALLBACK_OTP : generateOTP();
 }
 
 async function isGuardianPasswordValid(inputPassword, passwordHash) {
@@ -802,8 +808,83 @@ function deniedTemplate(name, denierName, notes) {
   </div>`;
 }
 
+async function forgotPassword(req, res) {
+  try {
+    const { email } = req.body;
+    const normalizedEmail = normalizeEmail(email);
+    const account = await prisma.guardianAccount.findUnique({ where: { email: normalizedEmail } });
+
+    // Always return success to prevent email enumeration
+    if (!account) return successResponse(res, 200, { message: 'If that email exists, a reset OTP has been sent.' });
+
+    const otp = getOtpForCurrentMode();
+    const otpHash = await hashOTP(otp);
+    const otpExpiry = getOTPExpiry();
+
+    await prisma.guardianAccount.update({
+      where: { id: account.id },
+      data: { otpCode: otpHash, otpExpiresAt: otpExpiry },
+    });
+
+    console.log(`[OTP-DEBUG] Guardian ForgotPassword OTP: ${normalizedEmail} => ${otp}`);
+
+    await getEmailQueue().add('password-reset', {
+      to: normalizedEmail,
+      subject: 'CryptWill Guardian Portal — Password Reset OTP',
+      html: `
+        <div style="font-family:Inter,sans-serif;background:#0A0A0F;color:#F0F0F5;padding:40px;max-width:480px;margin:auto;border-radius:12px;border:1px solid #2A2A3A;">
+          <h2 style="color:#F59E0B;">🔑 Guardian Password Reset</h2>
+          <p>Hi ${account.fullName || 'Guardian'},</p>
+          <p style="color:#9090A0;">Your password reset code is:</p>
+          <div style="font-size:40px;font-weight:700;letter-spacing:10px;color:#F59E0B;padding:20px;background:#111118;border-radius:10px;text-align:center;border:1px solid #2A2A3A;">
+            ${otp}
+          </div>
+          <p style="color:#606070;font-size:13px;margin-top:20px;">Expires in 10 minutes. If you didn't request this, ignore this email.</p>
+        </div>`,
+      type: 'PASSWORD_RESET',
+      channel: 'EMAIL',
+    });
+
+    return successResponse(res, 200, { message: 'If that email exists, a reset OTP has been sent.' });
+  } catch (err) {
+    return errorResponse(res, 500, 'Password reset request failed');
+  }
+}
+
+async function resetPassword(req, res) {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) return errorResponse(res, 400, 'Email, OTP and new password required');
+
+    const normalizedEmail = normalizeEmail(email);
+    const account = await prisma.guardianAccount.findUnique({ where: { email: normalizedEmail } });
+    if (!account) return errorResponse(res, 404, 'Account not found');
+
+    const isBypass = isFallbackAuthEnabled() && otp === DEV_FALLBACK_OTP;
+
+    if (!isBypass) {
+      if (!account.otpCode) return errorResponse(res, 400, 'Invalid or expired reset request');
+      if (new Date() > new Date(account.otpExpiresAt)) return errorResponse(res, 400, 'OTP expired');
+      const valid = await verifyOTP(otp, account.otpCode);
+      if (!valid) return errorResponse(res, 400, 'Invalid OTP');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await prisma.guardianAccount.update({
+      where: { id: account.id },
+      data: { passwordHash, otpCode: null, otpExpiresAt: null },
+    });
+
+    res.clearCookie(GUARDIAN_COOKIE);
+
+    return successResponse(res, 200, { message: 'Password reset successfully. Please login.' });
+  } catch (err) {
+    return errorResponse(res, 500, 'Password reset failed');
+  }
+}
+
 module.exports = {
   listGuardians, addGuardian, updateGuardian, removeGuardian, acceptGuardianInvite,
   guardianSignup, guardianLogin, guardianLogout, getGuardianDashboard, castVote, getVotes,
-  respondToInvite, getMyInvites,
+  respondToInvite, getMyInvites, forgotPassword, resetPassword
 };

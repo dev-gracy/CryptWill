@@ -15,6 +15,8 @@ router.post('/signup', guardianController.guardianSignup);
 // Guardian login with email+password
 router.post('/login', guardianController.guardianLogin);
 router.post('/logout', guardianController.guardianLogout);
+router.post('/forgot-password', guardianController.forgotPassword);
+router.post('/reset-password', guardianController.resetPassword);
 
 // ── Guardian portal routes (uses cookie-based guardian session, NOT owner auth) ──
 router.get('/my-portal', guardianController.getGuardianDashboard);

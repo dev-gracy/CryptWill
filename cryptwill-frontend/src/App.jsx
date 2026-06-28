@@ -35,6 +35,7 @@ import GuardianDashboard from './pages/guardian/GuardianDashboard';
 import GuardianLogin from './pages/guardian/GuardianLogin';
 import GuardianInvite from './pages/guardian/GuardianInvite';
 import GuardianSignup from './pages/guardian/GuardianSignup';
+import GuardianForgotPassword from './pages/guardian/GuardianForgotPassword';
 
 // Checkin
 import InstantCheckin from './pages/public/InstantCheckin';
@@ -125,6 +126,7 @@ function App() {
         <Route path="/guardian/signup" element={<GuardianSignup />} />
         <Route path="/guardian/signup/:token" element={<GuardianSignup />} />
         <Route path="/guardian/invite/:token" element={<GuardianInvite />} />
+        <Route path="/guardian/forgot-password" element={<GuardianForgotPassword />} />
 
         {/* Guardian Portal */}
         <Route path="/guardian/dashboard" element={<Navigate to="/guardian" replace />} />

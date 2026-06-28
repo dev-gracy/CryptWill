@@ -174,7 +174,7 @@ export default function Onboarding() {
         toast.error('Failed to retrieve wallet address.');
       }
     } catch (err) {
-      toast.error('Error connecting to Freighter wallet.');
+      toast.error('Freighter wallet not found! Please install the extension or click "Generate Demo Wallet" below.');
     } finally {
       setWalletConnecting(false);
     }
@@ -457,22 +457,23 @@ export default function Onboarding() {
                 <p className="text-xs text-text-secondary">Choose a tier that fits your asset management needs.</p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
                 {/* Free Plan */}
                 <div
                   onClick={() => setSelectedPlan('FREE')}
-                  className={`border-2 rounded-xl p-5 cursor-pointer transition-all flex flex-col justify-between ${
+                  className={`border-2 rounded-2xl p-5 cursor-pointer transition-all flex flex-col justify-between relative ${
                     selectedPlan === 'FREE' ? 'border-brand bg-brand/5 shadow-md shadow-brand/10' : 'border-border bg-background'
                   }`}
                 >
                   <div className="space-y-2">
                     <p className="font-semibold text-text-primary">FREE Plan</p>
-                    <p className="text-2xl font-bold">₹0 <span className="text-xs font-normal text-text-muted">/ month</span></p>
+                    <p className="text-2xl font-bold">₹0 <span className="text-xs font-normal text-text-muted">forever</span></p>
                     <ul className="text-xs text-text-secondary space-y-1 pt-2">
-                      <li>• 1 Stellar Wallet</li>
-                      <li>• Up to 2 Beneficiaries</li>
-                      <li>• Up to 3 Guardians</li>
-                      <li>• Email notifications only</li>
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-success flex-shrink-0" /> 4 beneficiaries</li>
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-success flex-shrink-0" /> 5 guardians</li>
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-success flex-shrink-0" /> 30-day check-in</li>
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-success flex-shrink-0" /> 500MB vault</li>
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-success flex-shrink-0" /> Email notifications</li>
                     </ul>
                   </div>
                   {selectedPlan === 'FREE' && (
@@ -485,24 +486,55 @@ export default function Onboarding() {
                 {/* Pro Plan */}
                 <div
                   onClick={() => setSelectedPlan('PRO')}
-                  className={`border-2 rounded-xl p-5 cursor-pointer transition-all flex flex-col justify-between ${
-                    selectedPlan === 'PRO' ? 'border-brand bg-brand/5 shadow-md shadow-brand/10' : 'border-border bg-background'
+                  className={`border-2 rounded-2xl p-5 cursor-pointer transition-all flex flex-col justify-between relative z-10 scale-[1.02] ${
+                    selectedPlan === 'PRO' ? 'border-brand bg-brand/5 shadow-lg shadow-brand/20' : 'border-border bg-background'
                   }`}
                 >
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand text-white text-xs px-3 py-1 rounded-full font-semibold">
+                    Most Popular
+                  </div>
                   <div className="space-y-2">
                     <p className="font-semibold text-brand">PRO Plan</p>
-                    <p className="text-2xl font-bold">₹299 <span className="text-xs font-normal text-text-muted">/ month</span></p>
+                    <p className="text-2xl font-bold">₹1,499 <span className="text-xs font-normal text-text-muted">/ month</span></p>
                     <ul className="text-xs text-text-secondary space-y-1 pt-2">
-                      <li>• Unlimited assets</li>
-                      <li>• Up to 10 Beneficiaries</li>
-                      <li>• Up to 7 Guardians</li>
-                      <li>• Email + SMS notifications</li>
-                      <li>• Custom intervals (14/30/60/90d)</li>
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-success flex-shrink-0" /> 10 beneficiaries</li>
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-success flex-shrink-0" /> 7 guardians</li>
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-success flex-shrink-0" /> Custom intervals</li>
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-success flex-shrink-0" /> 5GB vault</li>
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-success flex-shrink-0" /> SMS alerts</li>
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-success flex-shrink-0" /> PDF will export</li>
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-success flex-shrink-0" /> Priority support</li>
                     </ul>
                   </div>
                   {selectedPlan === 'PRO' && (
                     <div className="mt-4 bg-brand text-white text-xs py-1 rounded text-center font-semibold">
                       Demo Mode Selected
+                    </div>
+                  )}
+                </div>
+
+                {/* Enterprise Plan */}
+                <div
+                  onClick={() => setSelectedPlan('ENTERPRISE')}
+                  className={`border-2 rounded-2xl p-5 cursor-pointer transition-all flex flex-col justify-between relative ${
+                    selectedPlan === 'ENTERPRISE' ? 'border-brand bg-brand/5 shadow-md shadow-brand/10' : 'border-border bg-background'
+                  }`}
+                >
+                  <div className="space-y-2">
+                    <p className="font-semibold text-text-primary">ENTERPRISE Plan</p>
+                    <p className="text-2xl font-bold">₹3,999 <span className="text-xs font-normal text-text-muted">/ month</span></p>
+                    <ul className="text-xs text-text-secondary space-y-1 pt-2">
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-success flex-shrink-0" /> Unlimited assets</li>
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-success flex-shrink-0" /> Unlimited beneficiaries</li>
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-success flex-shrink-0" /> Unlimited guardians</li>
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-success flex-shrink-0" /> Lawyer management team</li>
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-success flex-shrink-0" /> 50GB encrypted vault</li>
+                      <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-success flex-shrink-0" /> Dedicated account manager</li>
+                    </ul>
+                  </div>
+                  {selectedPlan === 'ENTERPRISE' && (
+                    <div className="mt-4 bg-brand text-white text-xs py-1 rounded text-center font-semibold">
+                      Selected
                     </div>
                   )}
                 </div>
